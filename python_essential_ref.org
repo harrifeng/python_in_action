@@ -1,0 +1,39 @@
+* Chapter 1: A Tutorial Introduction
+** Running Python
+   + python 有自己的shell, _ 代表是上次的计算结果
+     #+begin_example
+       Type "help", "copyright", "credits" or "license" for more information.
+       >>> 6000 + 3344.23 + 123.4
+       9467.63
+       >>> _ + 1000
+       10467.63
+       >>>      
+     #+end_example
+   + 除了quit()的方式之外，还可以使用raise SystemExit来退出
+     #+begin_example
+       Type "help", "copyright", "credits" or "license" for more information.
+       >>> print "hello world"
+       hello world
+       >>> raise SystemExit     
+     #+end_example
+
+** Variables and Arithmetic Expressions
+   + python是一种动态语言，也就是说变量的类型是不固定的。更确切的说，是变量可以指向任意类型的数据
+     #+begin_src python
+       principal = 1000 ; rate = 0.05 ; numyears = 5
+       year = 1principal = 1000 ; rate = 0.05 ; numyears = 5
+       year = 1
+       while year <= numyears
+           principal = principal * ( 1 + rate)
+           print "%3d %0.2f" % (year, principal)
+           year += 1
+     #+end_src
+   + python string 的format函数很常用，用法如下
+     #+begin_src python
+       print format (year, "3d"), format (principal, "0.2f")
+       
+       # Or it can be used as string's function
+       print "{0：3} {1:0.2f}".format(year, principal)
+     #+end_src
+** Conditionals
+   + 
