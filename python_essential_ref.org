@@ -36,4 +36,16 @@
        print "{0：3} {1:0.2f}".format(year, principal)
      #+end_src
 ** Conditionals
-   + 
+   + Condition 也是和常规语言差不多，只不过，python不使用括号，而是使用缩进
+     #+begin_src python
+       if a < b:
+           pass    #Do nothing
+       else:
+           print "Computer says No"
+     #+end_src
+   + or, and, not 都是python关键字
+     #+begin_src python
+       if product == "game" and type == "pirate memory" \
+                            and not (age < 4 or age > 8):
+           print "I'll take it !"
+     #+end_src
