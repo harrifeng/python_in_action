@@ -109,4 +109,82 @@
        '3.4'
        >>> repr(x)
        '3.3999999999999999'
+       >>> format(x, "0.5f")
+       '3.40000'
      #+end_src
+** List
+   + List就是python中最常见的数据结构了,用起来也很随意.从0开始index,
+     在尾部插入用append, 在任意位置插入用insert
+     #+begin_src python 
+       names = ["Dave", "Mark", "Ann", "Phil"]
+       a = names[2]   # Returns the third item of the list, "Ann"
+       names.append("Paula")
+       names.insert(2, "Thomas")
+     #+end_src
+   + list可以包含任意的数据类型,甚至list中含有list
+     #+begin_src python 
+       a = [1, "Dave", 3.14, ["Mark", 7, 9, [100, 101]], 10]
+       
+       a[1]             # Retursn "Dave"
+       a[3][2]          # Retursn 9
+       a[3][3][1]       # Retursn 101
+     #+end_src
+   + 下面是一个读取文件名,然后找到文件中最大数和最小数的例子,用到了前面的知识
+     #+begin_src python 
+       import sys
+       if len(sys.argv) != 2
+           print "Please supply a filename"
+           raise SystemExit(1)
+       f = open(sys.argv[1])
+       lines = f.readlines()
+       f.close()
+       
+       Convert all of the input values from strings to floats
+       fvalues = [float(line) for line in lines]
+       
+       print "The minimum value is ", min(fvalues)
+       print "The maximum value is ", max(fvalues)
+     #+end_src
+** Tuples
+   + 从最直观上来看tuples是用(),而list是用[]来创建的.说白了,tuples就是不能增加
+     成员的list,常用的tuples方式就是来分配数据. tuples之所以独立出list就是因为
+     他的数量不能增长,是固定的,所以消耗内存更少
+     #+begin_src python 
+       stock = ('COOG', 100, 490.10)
+       address = ('www.python.org', 80)
+       person = (first_name, last_name, phone)
+       
+       name, shres, price = stock
+       host, port = address
+       first_name, last_name, phone = person
+     #+end_src
+** Sets
+   + 和 list以及tuples不同的是,set是一个没有顺序的概念.数学中的集合也是没有顺序的,
+     而且set内部是没有重复成员的,同时 set的创建就不是默认[]或者()那么简单了,要使用
+     关键字set
+     #+begin_src python 
+       s = set([3, 5, 9, 10])   # Create a set of numbers
+       t = set("Hello")         # Create a set of unique characters
+       
+       # 从内部输出看,我们注意到set刚好是由()和[]组成的
+       >>> t
+       set(['H', 'e', 'l', 'o'])
+     #+end_src
+
+   + set支持 全集, 交集, 补集 并集
+     #+begin_src python 
+       a = t | s  # 全集 Union of t and s                                      
+       b = t & s  # 交集 Intersection of t and s
+       c = t - s  # 补集 Set difference (items in t, but ont in s)
+       d = t ^ s  # 并集 Symmetric difference (items in t or s, but not both)
+     #+end_src
+   + set是可以add, update,和remove的
+     #+begin_src python        t.add('x')
+       s.update([10, 37, 42])   #Add multiple items to s
+       t.remove('H')
+     #+end_src
+
+
+
+
+
