@@ -49,3 +49,64 @@
                             and not (age < 4 or age > 8):
            print "I'll take it !"
      #+end_src
+   + python没有switch的概念,都是用elif来代替的
+     #+begin_src python
+       if suffix == ".htm":
+           content = "text/html"
+       elif suffix == ".jpg":
+           content = "image/jpeg"
+       elif suffix == ".png":
+           content = "image/png"
+       else:
+           raise RuntimeError("Unknown content type")
+     #+end_src
+** File Input and Output
+   + 下面是一个python读取文件的例子
+     #+begin_src python
+       f = open("tmp.txt")
+       line = f.readline()
+       while line:
+           # the trailing '.' can delete the last new line,
+           # as the print will introduce a new line
+           print line,        
+           line = f.readline()
+       f.close()
+     #+end_src
+   + 写入文件的时候,我们会用到 >>, 如下例:
+     #+begin_src python
+       f = open("out", "w")    #open file for writing
+       while year <= numyears:
+           principal = principal * (1 + rate)
+           print >> f, "%3d %0.2f" % (year, principal)
+           year += 1
+       f.close()
+     #+end_src
+   + 在c语言里面经常见到的请输入啥啥啥到这里就是如下写法
+     #+begin_src python
+       import sys
+       sys.stdout.write("Enter your name :")
+       name = sys.stdin.readlin()
+       
+       # You can shortened all previous code to one line in Python 2
+       
+       name = raw_input("Enter your name:")
+     #+end_src
+** Strings
+   + 在python中,单引号,双引号,甚至三引号都能代表字符串,三引号字符串甚至不需要在一行里面
+   + 获取子字符串非常简单s[i:j]就可以,而且数字字符串之间相加依然是字符串
+     #+begin_src python
+       c = a[:5]    #"Hello"
+       e = a[3:8]   #"lo Wo"
+     #+end_src
+   + 想要把字符串转换成数字,要靠1format() 2str() 和3repr(), 其中str()和repr()的区别
+     是, str()返回print的结果,repr则是返回机器内部实际的存储方式
+     #+begin_src python
+       s = "The value of x is " + str(x)
+       s = "The value of x is " + repr(x)
+       s = "The value of x is " + format(x, "4d")     
+       >>> x = 3.4
+       >>> str(x)
+       '3.4'
+       >>> repr(x)
+       '3.3999999999999999'
+     #+end_src
