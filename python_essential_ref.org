@@ -274,6 +274,29 @@
        print quotient, remainder
      #+end_src
    + 和c语言一样, python在function内部申请的变量是局部变量.
+** Generators
+   + function可以直接返回一个结果,也可以用tuples返回多个结果,还可以使用yield返回不定个数的
+     结果.所有使用yield的function就可以被称作是generator
+     #+begin_src python
+       def  countdown(n):
+           print "Counting down!"
+           while n > 0:
+               yield n
+               n -= 1
+       
+       c = countdown(5)
+       print c.next()
+       print c.next()
+       print c.next()
+       print c.next()
+       print c.next()
+       
+       for i in countdown(5):
+           print i,
+     #+end_src
+   + 从上面的例子我们可以看到, yield的结果和文件以及list一样是"可序列化的(iterable)", 也就
+     是说, generator的这个特性可以让我们写出更通用的代码.
+
 
 
 
