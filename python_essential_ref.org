@@ -183,6 +183,56 @@
        s.update([10, 37, 42])   #Add multiple items to s
        t.remove('H')
      #+end_src
+** Dictionaries
+   + 在小括号tuples,中括号list之后,大括号终于派上了用场,那就是dictionary.你尽可以把dictionary
+     想象成python内置的hash table
+   + 既然是hash table,那么就有key和value的概念在里面,":"前面的是key,后面的是value,任何不可变
+     的类型(字符,数字,tuples),都可以作为key,最常用的是字符串.所有dictionary的操作都是key-value
+     导向的
+     #+begin_src python 
+       import sys
+       
+       stock = {
+           "name"   :   "GOOG",
+           "shares"  :   100,
+           "price"  :   1490.10
+           }
+       stock["shares"] = 50             # update value
+       stock["date"] = "June 7, 2007"   # add domain
+       
+       name = stock["name"]
+       value = stock["shares"] * stock["price"]
+       
+       print name, value
+     #+end_src
+   + dictionary是一种非常有用(无顺序数据)的查找容器, 通过"in"来进行key值查找
+     #+begin_src python
+       prices = {
+           "GOOG" : 490.10,
+           "AAPL" : 123.50,
+           "IBM"  : 91.50,
+           "MSFT" :52.13,
+           }
+       
+       if "MSFT" in prices:
+           p = prices["MSFT"]
+       else:
+           p = 0
+           
+       #more compact way to get the value
+       p2 = prices.get("SCOX", 0.0)
+       
+       print p, p2
+       
+       # convert keys to a list:
+       syms = list(prices) #syms = ["AAPL", "MSFT", "IBM", "GOOG"]
+       
+       # delete an element from dictionary
+       del prices["MSFT"]
+     #+end_src
+   + 
+
+
 
 
 
