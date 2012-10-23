@@ -230,7 +230,52 @@
        # delete an element from dictionary
        del prices["MSFT"]
      #+end_src
-   + 
+** Iteration and Looping
+   + 借助range(), for在数字的循环领域可以大显身手
+     #+begin_src python
+       for n in range(1, 10):
+           print "2 to the %d power is %s" % (n, 2**n)
+       
+       print range(5)
+       print range(1,8)
+       print range(0, 14, 3)
+       print range(8, 1, -1)
+     #+end_src
+   + 当然,在python擅长的字符串领域,for更能发挥
+     #+begin_src python
+       import sys
+       
+       a = "Hello World"
+       for c in a:
+           #print c   ## with new lines
+           #print c,  ## with extra spaces;
+           sys.stdout.write(c) ## all clear
+       print    
+       
+       b = ["Dave", "Mark", "Ann", "Phil"]
+       for name in b:
+           print name
+       
+       c = { 'GOOG' : 490.10, 'IBM' : 91.50, 'AAPL' : 123.15 }
+       for key in c:
+           print key, c[key]
+     #+end_src
+** Functions
+   + 在python中,是使用def来创建, 而且由于tuples这种特殊形式的存在,在python function
+     中返回两个结果是非常容易的
+     #+begin_src python
+       def divide(a, b):
+           q = a // b   # // is truncating division.
+           r = a - q * b
+           return (q, r)
+       
+       quotient, remainder = divide(1526, 30)
+       
+       print quotient, remainder
+     #+end_src
+   + 和c语言一样, python在function内部申请的变量是局部变量.
+
+
 
 
 
