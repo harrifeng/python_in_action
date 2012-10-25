@@ -1,3 +1,4 @@
+#+OPTIONS: ^:{}
 * Chapter 1: A Tutorial Introduction
 ** Running Python
    + python 有自己的shell, _ 代表是上次的计算结果
@@ -296,6 +297,105 @@
      #+end_src
    + 从上面的例子我们可以看到, yield的结果和文件以及list一样是"可序列化的(iterable)", 也就
      是说, generator的这个特性可以让我们写出更通用的代码.
+** Coroutines
+   + to be continued
+** Objects and Classes
+   + 在python中, 每一个value都是object. 所谓object也就是包含两部分:1值2方法. 在python中,有个
+     dir的函数可以列出能在某个object上面调用的所有方法
+     #+begin_src python
+       items = [37, 42]
+       items.append(73)
+       print items
+       print dir(items)
+     #+end_src
+   + dir()的结果,除了常见的insert()和append()还有__add__()这种函数内部操作的特殊函数
+   + 创建一个新的class类型,用的是关键字class,如下.在python中,我们是使用()来表示继承关系的,下面的class
+     继承自object,其实所有的python object都继承自object
+     #+begin_src python
+       class Stack(object):
+           def __init__(self ):
+               self.stack = []
+           def push():
+               self.stack.append(object)
+           def pop(self):
+               return self.stack.pop()
+           def length(self):
+               return len(self.stack)
+     #+end_src
+   + 当然了,我们发现其实stack这个类型大部分都来自list这种数据类型,我们可以通过把stack继承自list来完成这次
+     的类定义
+     #+begin_src python 
+       class Stack(list):
+           # Add push () method for stack interface
+           def push(self, object):
+               self.append(object)
+     #+end_src
+   + 需要注意的是,我们所有定义的函数都是对"类的对象"起作用的,如果想让这个函数被类直接调用,那么就要创建static
+     函数
+     #+begin_src python
+       class EventHandler(object):
+           @staticmethod
+           def dispatcherThread():
+               while (1):
+               # ...
+     #+end_src
+** Exceptions
+   + 如果想控制错误发生时候的情况,我们可以catch exception
+     #+begin_src python
+       try:
+           f = open("file.txt", "r")
+       except IOError as e:
+           print "following is the error message"
+           print e
+     #+end_src
+   + 创建exception的方法是通过raise
+     #+begin_src python
+       raise RuntimeError("Computer says no")     
+     #+end_src
+   + 很多系统资源比如lock,file,network connection都是有竞争性的需求的.所以我们可以同一个叫做with
+     的方法来在进入某段代码的时候获得资源,离开某段代码的时候释放这个资源
+     #+begin_src python
+       import threading
+       message_lock = threading.Lock()
+       # ...
+       
+       with message_lock:
+           messages.add(newmessage)
+     #+end_src
+** Modules
+   + python发展起来,绝不可能是一个文件到底.就像c语言可以include一样, python也可以把常用代码保持成一个
+     *.py文件,然后其他文件用到的时候,有两种方法
+     1) import : 这种方法还是会创建一个新的namespace,所有的函数调用都要带前缀.如果你想改前缀名,可以用
+	"import as"
+	#+begin_src python
+          # already has file div.py
+          
+          import div        # New namespace div
+          a, b = div.divide(2305, 29)
+          
+          import div as foo # New namespace foo
+          a, b = foo.divide(2305, 29)
+	#+end_src
+     2) from import: 这种方法是把某个module的一部分或者全部function导入到当前的namespace!
+	#+begin_src python
+          from div import divide   # import one function
+          a, b = divide(2305, 29)  # No longer need the div prefix
+          
+          from div import *        # import all the functions
+	#+end_src
+   + 当我们无论如何方式import module的时候,dir()是我们获取此module的函数列表的绝佳方式
+
+
+
+
+     
+
+   
+
+
+
+     
+
 
 
 
