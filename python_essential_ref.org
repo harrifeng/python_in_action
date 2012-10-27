@@ -583,6 +583,105 @@
           print b
           print a                # a keeps unchanged
 	#+end_src
+** First-Class Objects
+   + python 所有object都是"first class",也就是说,所有的object在python内部都是平等对待的.这个特性
+     最明显的作用就是python的container可以包括各种数据类型,并不存在什么整形list, 因为list里面可以放置各种数据
+     类型.
+     #+begin_src python
+       items = {
+           'number' : 42, 
+           'text' : "hello world"
+           }
+       
+       items["func"] = abs
+       
+       print items["func"](-45)
+     #+end_src
+   + python中所有的object都是first-class这个特性常常被新手忽略,其实这才是python能够
+     写出非常健壮而且扩展性强的代码的前提
+     #+begin_src python
+       line  = "GOOG, 100, 490"
+       field_types = [str, int, float]
+       raw_fields = line.split(',')
+       fields = [ty(val) for ty, val in zip(field_types, raw_fields)]
+       
+       print fields
+     #+end_src
+** Built-in Types for Representing Data
+   + None Type: 就是None,常用在函数返回了空值的情况,或者作为optional参数的默认值, 在boolean 表达式
+     中, None等于False
+   + Numeric Type:
+     1) Boolean: 就是True 和 False
+     2) Integer: 大多数机器上的范围是-2147483648 to 2147483647,其实不用过分担心整形的大小,不够用时候,
+	integer会自动增长为long. 但是如果用到了isinstance(x, int) 如果x超过界限,那么就会变成long,
+	这个函数也就返回False了
+     3) Long Integer: 就是integer的加长精度版本,在python3中,两者的区别消失
+     4) Float number: python中的浮点型只有64-bit的,和c中的double一样
+     5) Complex number:实数z 包含z.real和z.imag两部分
+** Sequence Type
+   + 所谓sequence type也就是string, list, tuple这些了
+** Operations Common to All Sequences
+   + 所有sequence的type都有的操作如下,当然这些操作都是必须有意义的才能进行,比如选取最大数,要
+     这些数字可以比较才能选出来
+     | item              | description                            |
+     |-------------------+----------------------------------------|
+     | s[i]              | Returns element i of a sequence        |
+     | s[i:j]            | Returns a slice                        |
+     | s[i:j:stride]     | Returns an extended slice              |
+     | len(s)            | Number of elements in s                |
+     | min(s)            | Minimum value in s                     |
+     | max(s)            | Maximum value in s                     |
+     | sum(s, [,initial] | Sum of items in s                      |
+     | all(s)            | Checks whether all items in s are True |
+     | any(s)            | Checks whecher any item in s is True   |
+     | s[i] = v          | Item assignment                        |
+     | s[i:j] = t        | Slice assignment                       |
+     | s[i:j:stride] = t | Extended slice assignment              |
+     | del s[i]          | Item deletion                          |
+     | del s[i:j]        | Slice deletion                         |
+     | del s[i:j:stride] | Extended slice deletion                | 
+** Lists
+   + list 当然支持一系列的操作,尤其是sort操作,可以指定key function和reverse flag
+** Strings
+   + string的内置函数更是浩如烟海,毕竟python就是从string起家的
+** Mapping Types
+   + dictionary 是唯一的map type, 特点就是没顺序,但是是以某一个object为索引
+** Set Types
+   + 所谓set type就是和tuple一致,但是不能有重复的成员. python有两种set type, 一种是set, 是mutable
+     的,另一种是frozenset,是immutable的
+     #+begin_src python 
+       s = set([1,5,10,15])
+       f = frozenset(['a', 37, 'hello'])
+     #+end_src
+** User-Defined Functions
+   + 所有用def或者lambda创建的函数,他们都有一些像__doc__, __dict__一类的内置函数
+** Methods
+   + 所谓methods就是在class内部定义的function,分成了三类
+     #+begin_src python
+       class Foo(object):  # inhert from object
+           def instance_method(self, arg):
+               print "instance :" + str(arg)
+           @classmethod
+           def class_method(cls, arg):
+               print "class " + str(arg)
+           @staticmethod
+           def static_method(arg):
+               print "static " + str(arg)
+       
+       f = Foo()
+       meth = f.instance_method
+       meth(37)                            #bound method
+       umeth = Foo.instance_method
+       umeth(f, 68)                        #unbound method
+     #+end_src
+     1) instance methods: 就是以instance(class的实体)作为第一个参数的函数, 如果直接被
+	class引用,要再第一个参数上面加一个instance
+     2) class method: 就是以class为第一个参数的函数.
+     3) static method: 只是定义在某个class里面,但是跟这个函数没有必然联系,没有用class相关
+	的函数参数
+
+	
+
 
 
 	
