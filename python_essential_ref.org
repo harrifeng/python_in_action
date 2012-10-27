@@ -679,6 +679,16 @@
      2) class method: 就是以class为第一个参数的函数.
      3) static method: 只是定义在某个class里面,但是跟这个函数没有必然联系,没有用class相关
 	的函数参数
+** Classe, Types, and Instances
+   #+begin_src python
+     class Foo(object):
+         pass
+     
+     print type(Foo)     # <type 'type'>
+     
+     f = Foo()
+     print type(f)       # <class '__main__.Foo'>
+   #+end_src
 
 	
 
