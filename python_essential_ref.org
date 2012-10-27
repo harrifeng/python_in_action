@@ -444,6 +444,157 @@
    + 重点章节以后再写!
 ** Containers
    + 三大container,用了三种括号,他们内部是不需要使用换行符的(\),所有括号之间的东西都认为是在一行.
+     #+begin_src python 
+       a = [1,
+            2.4,
+            "hello"
+            ]
+     #+end_src
+** Operators, Delimiters, and Special Symbols
+   + 操作符没啥好说的,就是$和?在python里面都没有意义.
+** Documentation Strings
+   + 如果某个函数的第一行是string,那么这个string就会变成函数的文档
+     #+begin_src python
+       def fact(n):
+           "This function computes a factorial"
+           if (n <= 1):
+               return 1
+           else: return n * fact(n - 1)
+       
+       print fact.__doc__    
+     #+end_src
+** Decorators
+   + 我们前面就见到过,用@来修饰函数的情况,比如某个类里面的某个函数是static的
+     #+begin_src python
+       class Foo(object):
+           @staticmethod
+           def bar():
+               pass
+     #+end_src
+** Source Code Encoding
+   + 除了在英美,其他地方的程序员还是可能在程序中夹渣其他语言的,所以在python文件开头可以确定使用
+     那种编码方式
+     #+begin_src python
+       # -*- coding: UTF-8 -*-
+       
+       s = "中文" # String in quotes is directly encoded in UTF-8
+     #+end_src
+* Types and Objects
+** Terminology
+   + 所有的数据都是存在object里面的,而且在python里面,一切都是object. 以a = 42 为例每个object
+     都有如下三部分构成:
+     1) identity :identity就是一个指向这个数据4的地址(可以使用id()函数来返回一个整数,这个整数就是identity的内存地址)
+	,而a就是代表这块内存的名字.
+     2) type : 也叫做class, 表述了这个object的行为特征和函数方法.
+     3) value : 42就是这个object的value. object的value可以改变的叫做mutable,比如list, 而object
+	的value不能改变的就叫做immutable,比如tuples
+   + 每一个object的都有自己的一系列数据和函数, 数据叫做attribute, 函数叫做method.
+** Object Identity and Type
+   + 我们前面说过id()可以返回某个object的内存地址,虽然很多时候是虚拟的地址,但是id()对某一个相同的
+     object总能返回相同的地址.所以is operator就通过比较id()函数值的方式来确定两者是不是同一
+     个object.
+     #+begin_src python
+       def compare(a, b)
+           if a is b:
+               print "a and b are the same object"
+           if a == b:
+               print "a and b have the same value"
+           if type(a) is type(b):
+               # that is to say if id(list) == id(list)
+               print "a and b have the same type"
+     #+end_src
+   + 同样的我们还可以使用list加type来确定某个object的类型,但是更推荐的用法是使用内置的函数:
+     isinstance(s, list), 因为is的方法只有两者类型完全一致才能判断对,他没有继承的概念,而
+     isinstance就能知道继承的关系
+     #+begin_src python
+       if type(s) is list:
+           s.append(item)
+       
+       # better way to check type
+       if isinstance(s, list)
+           s.append(item)
+     #+end_src
+   + 但是其实判断一个object的类型并不是那么的实用,比如一个class可能和list有一样的接口但是因为
+     没有继承自list,也不会被isinstance认出来的
+** Reference Counting and Carbage Collection
+   + python的GC是通过reference count来判断的,每当一个object被赋予一个新名字或者被放到了一个新
+     的container的时候,ref count就会增加
+     #+begin_src python
+       a = 37      # Creates an object with value 37
+       b = a       # Increases reference count on 37
+       c = []
+       c.append(b) # Increases reference count on 37
+     #+end_src
+   + ref count减少的情况有: del了, 或者某些name被其他object占用
+     #+begin_src python
+       del a      # Decrease reference count of 37
+       b = 42     # Decrease reference count of 37
+       c[0] = 2.0 # Decrease reference count of 37
+     #+end_src
+   + 我们还可以他能给个sys.getrefcount()函数来获得当前的ref count数目, 这个数目通常会比你想象的
+     大很多,原因就是程序的不同部分会共用object来减少内存使用
+     #+begin_src python
+       import sys
+       
+       a = 37
+       print sys.getrefcount(a)
+     #+end_src
+   + 下面这种情况下,虽然del减小了ref count,但是这种你中有我,我中有你的循环模式,导致ref count永远无法到
+     0,也就造成了memory leak, python会不停的启动一个cycle-detection的算法来检查这些内存泄露
+     #+begin_src python
+       a = {}
+       b = {}
+       a['b'] = b
+       b['a'] = a
+       del a
+       del b
+     #+end_src
+** References and Copies
+   + 如果有 a = b, 而且b是那种immutable类型的话,比如number, string.那么很简单,再造一个b的
+     copy a,object 也创建新的, 什么都是全新的.
+   + 如果有 a = b, 而且b是那种mutable类型的话,比如list,那么其实新的a就是指向原来那个object而已
+     #+begin_src python
+       a = [1, 2, 3, 4]
+       b = a
+       print b is a  # True
+       b[2] = -100
+       print a       # [1, 2, -100, 4]
+     #+end_src
+   + 为了应对这种情况,python中有两种方法:
+     1) 浅拷贝(shallow copy) : 最外面的list 重建了object,但是list内部的成员两者是共享的
+	#+begin_src python
+          a = [1, 2, [3, 4]]
+          b = list(a)
+          print b is a           # False
+          b.append(100)
+          print b
+          print a                # a is not changed, since it's adding new value
+          b[2][0] = -100
+          print b
+          print a                # a's value also changed
+	#+end_src
+
+     2) 深拷贝(deep copy) : 从外到内的objec投重建了
+	#+begin_src python
+          import copy
+          a = [1, 2, [3, 4]]
+          b = copy.deepcopy(a)
+          b[2][0] = -100
+          print b
+          print a                # a keeps unchanged
+	#+end_src
+
+
+	
+
+
+
+
+
+
+     
+
+
 	
 
 
