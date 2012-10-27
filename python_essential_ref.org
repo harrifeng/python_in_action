@@ -384,6 +384,68 @@
           from div import *        # import all the functions
 	#+end_src
    + 当我们无论如何方式import module的时候,dir()是我们获取此module的函数列表的绝佳方式
+** Getting Help
+   + 一般来说，我们在python中获取帮助的方式有两种：
+     1) help('modulename')
+     2) __doc__ attribte.
+* Lexical Conventions and Syntax
+** Line Structure and Indentation
+   + 在python中，是没有换行符的，只要过了newline就认为是一行，过长的句子是靠(\)来分开的，
+     在(), [], {}, 中间是不需要(\)来区分的
+   + python最大的特点是靠缩进来区分代码块的
+     #+begin_src python
+       if a:
+           statement1
+           statement2
+       else:
+           statement3
+     #+end_src
+   + 如果行太短，我们也可以把带(:)的句子和后面的连成一行
+     #+begin_src python
+       if a: statement1
+       else: statement2
+     #+end_src
+   + 如果空执行行，在c里面是单独一个(;)，而在python里面就是使用关键字pass
+     #+begin_src python
+       if a:
+           pass
+       else:
+           statements
+     #+end_src
+   + python 社区是极度不推荐tab和space混合使用的，编译的时候使用(-t)会提示混用为warning，
+     (-tt)会提示混用为TabError exception
+   + 如果想在一行放置两个statement，可以在他们之间放置一个(;)
+   + (#)代表注释， python解释器会忽略所有的空白行
+** Identifieers and Reserved Words
+   + python的变量是大小写敏感的
+   + 下面是所有的python保留关键字，我们发现这些关键字都是全部小写的
+     |----------+---------+--------+----------+-------|
+     | and      | del     | from   | nonlocal | try   |
+     | as       | elif    | global | not      | while |
+     | assert   | else    | if     | or       | with  |
+     | break    | except  | import | pass     | yield |
+     | class    | exec    | in     | print    |       |
+     | continue | finally | is     | raise    |       |
+     | def      | for     | lambda | return   |       |
+     |----------+---------+--------+----------+-------|
+   + 以(_)开头的函数都是有特殊意义的，比如_foo这种函数就不会被from module import * 导入到其他
+     module里面. __init__这种是保留的特殊函数
+** Numeric Literals
+   + python默认只有四种内置数字类型
+     1) Booleans : True 和 False会毫无疑问的被解释成Boolean类型的
+     2) Integers : python和c语言不太一样,没有分成short, int, long,那是因为本身
+	python的integer自带数据长度这个属性.反正python的整形你不用考虑溢出问题了.而且通过
+	前缀加0,0x,0b来分别代表八进制,十六进制和二进制数据(0644, 0x100fea, 0b1110)
+     3) Floating-point numbers:类似于123.34或者1.2334e+02这种就是float
+	类型了
+     4) Complex numbers:如果最后跟上j或者J就是虚数.所以我们可以通过实数+虚数的方式来创建我们的
+	complex类型: 1.2 + 12.34J
+** String Literals
+   + 重点章节以后再写!
+** Containers
+   + 三大container,用了三种括号,他们内部是不需要使用换行符的(\),所有括号之间的东西都认为是在一行.
+	
+
 
 
 
