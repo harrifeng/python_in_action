@@ -1,0 +1,25 @@
+#+OPTIONS: ^:{}
+* Chapter 1:Text
+** string: Text Constants and Templates
+*** Functions
+    + capwords()是大写首字母, 
+      #+begin_src python
+        import string
+        
+        s = 'The quick brown fox jumped over the lazy dog.'
+        
+        print s
+        print string.capwords(s)
+      #+end_src
+    + maketrans是创建能让translate()函数试用的翻译表
+      #+begin_src python
+        import string
+        
+        leet = string.maketrans('abegiloprstz', '463611092572')
+        
+        s = 'The quick brown fox jumped over the lazy dog'
+        
+        print s
+        print s.translate(leet)
+      #+end_src
+
