@@ -22,4 +22,53 @@
         print s
         print s.translate(leet)
       #+end_src
+*** Templates
+    + Templates是用来从某个"字典"中取得数据然后输出, 和 string自身的那种
+      format print相比,最大的区别是,template是没有字符类型的概念的,不需要
+      知道是%d, %s, 还是%f
+      #+begin_src python
+        import string
+        
+        #This is a dict, .i.e, var's value is foo
+        values = { 
+            'var':'foo' , 
+            'num':234.2 
+            } 
+        
+        t = string.Template("""
+        Variable          : $var
+        Escape            : $$
+        Variable in text: ${var}iable
+        """)
+        
+        print 'TEMPLATE:', t.substitute(values)
+        
+        s = """
+        Variable          : %(var)s
+        Escape            : %%
+        Variable in text  : %(var)siable
+        Number is         : %(num)f
+        """
+        
+        print 'INTERPOLATION:', s % values
+        
+      #+end_src
+    + 一个常见的良好做法是使用safe_substitute来代替substitute防止出现字典中某词
+      不存在的情况
+      #+begin_src python
+        import string
+        
+        values = { 'var' : 'foo'}
+        
+        t = string.Template("$var is here but $missing is not provided")
+        
+        try:
+            print 'substitute() way:', t.substitute(values)
+        except KeyError, err:
+            print 'ERROR:', str(err)
+        
+        print 'safe_substitute():', t.safe_substitute(values)    
+      #+end_src
+*** Advanced Templates
+
 
