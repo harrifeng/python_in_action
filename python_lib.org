@@ -70,5 +70,30 @@
         print 'safe_substitute():', t.safe_substitute(values)    
       #+end_src
 *** Advanced Templates
+    + string.Template也可以通过更改delimiter和idpattern两个attributes来实现更具体的替换
+      #+begin_src python 
+        import string
+        
+        template_text = '''
+          Delimiter : %%
+          Replaced  : %with_underscore
+          Ignored   : %notunderscored
+        '''
+        
+        d = { 'with_underscore' : 'replaced',
+              'notunderscored' : 'not replaced',
+              }
+        
+        print "---------"
+        class MyTemplate(string.Template):
+            delimiter = '%'
+            idpattern = '[a-z]+_[a-z]+'
+        
+        t = MyTemplate(template_text)
+        print 'Modified ID pattern:'
+        print t.safe_substitute(d)    
+      #+end_src
+    + 
+
 
 
