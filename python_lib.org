@@ -10,6 +10,12 @@
         
         print s
         print string.capwords(s)
+        
+        # Output:
+        # <============================================================================
+        # The quick brown fox jumped over the lazy dog.
+        # The Quick Brown Fox Jumped Over The Lazy Dog.
+        # ============================================================================>
       #+end_src
     + maketrans是创建能让translate()函数试用的翻译表
       #+begin_src python
@@ -21,6 +27,12 @@
         
         print s
         print s.translate(leet)
+        
+        # Output:
+        # <============================================================================
+        # The quick brown fox jumped over the lazy dog
+        # Th3 qu1ck 620wn f0x jum93d 0v32 7h3 142y d06
+        # ============================================================================>
       #+end_src
 *** Templates
     + Templates是用来从某个"字典"中取得数据然后输出, 和 string自身的那种
@@ -52,6 +64,19 @@
         
         print 'INTERPOLATION:', s % values
         
+        # Output:
+        # <============================================================================
+        # TEMPLATE: 
+        # Variable          : foo
+        # Escape            : $
+        # Variable in text: fooiable
+        
+        # INTERPOLATION: 
+        # Variable          : foo
+        # Escape            : %
+        # Variable in text  : fooiable
+        # Number is         : 234.200000
+        # ============================================================================>
       #+end_src
     + 一个常见的良好做法是使用safe_substitute来代替substitute防止出现字典中某词
       不存在的情况
@@ -68,9 +93,19 @@
             print 'ERROR:', str(err)
         
         print 'safe_substitute():', t.safe_substitute(values)    
+        
+        # Output:
+        # <============================================================================
+        # substitute() way: ERROR: 'missing'
+        # safe_substitute(): foo is here but $missing is not provided
+        # ============================================================================>
       #+end_src
 *** Advanced Templates
     + string.Template也可以通过更改delimiter和idpattern两个attributes来实现更具体的替换
+      - delimiter 用来更改提示符，默认提示符是$下面的例子就给他改成了%
+      - idpattern 用来限制被替换的字符,只有满足两条:第一有提示符,第二符合idpattern的要求的字符串
+	才可能被替换,比如下面的%with_underscore 一来有提示符,而来符合正则表达式[a-z]+_[a-z]+的
+	的要求
       #+begin_src python 
         import string
         
@@ -84,7 +119,6 @@
               'notunderscored' : 'not replaced',
               }
         
-        print "---------"
         class MyTemplate(string.Template):
             delimiter = '%'
             idpattern = '[a-z]+_[a-z]+'
@@ -92,20 +126,34 @@
         t = MyTemplate(template_text)
         print 'Modified ID pattern:'
         print t.safe_substitute(d)    
+        
+        # Output:
+        # <============================================================================
+        # Modified ID pattern:
+        
+        #   Delimiter : %
+        #   Replaced  : replaced
+        #   Ignored   : %notunderscored
+        # ============================================================================>
+        
       #+end_src
     + 对于更复杂的改变，全部重写pattern attribute是能够实现的
       #+begin_src python
-	 import string
-	 
-	 t = string.Template('$var')
-	 print t.pattern.pattern
-	 
-	 # =====Run Result=====
-	 #   (?P<escaped>\$) |	 # Escape sequence of two delimiters
-	 #   (?P<named>[_a-z][_a-z0-9]*)      |	  # delimiter and a Python identifier
-	 #   {(?P<braced>[_a-z][_a-z0-9]*)}   |	  # delimiter and a braced identifier
-	 #   (?P<invalid>)		# Other ill-formed delimiter exprs
-	 # )
+        import string
+        
+        t = string.Template('$var')
+        print t.pattern.pattern
+        
+        # Output:
+        # <============================================================================
+            # \$(?:
+            #   (?P<escaped>\$) |   # Escape sequence of two delimiters
+            #   (?P<named>[_a-z][_a-z0-9]*)      |   # delimiter and a Python identifier
+            #   {(?P<braced>[_a-z][_a-z0-9]*)}   |   # delimiter and a braced identifier
+            #   (?P<invalid>)              # Other ill-formed delimiter exprs
+            # )
+        # ============================================================================>
+        
       #+end_src
     + 下面看一个全部重写pattern attribute的例子
       #+begin_src python 
@@ -130,16 +178,17 @@
         print 'MATCHES:', t.pattern.findall(t.template)
         print 'SUBSTITUTED:', t.safe_substitute(var='replacement')
         
-        # =====Run Result=====
+        # Output:
+        # <============================================================================
         # MATCHES: [('{{', '', '', ''), ('', 'var', '', '')]
         # SUBSTITUTED: 
         # {{
         # replacement
-        
+        # ============================================================================>
       #+end_src
 
 	
 
 
 
-
+    
