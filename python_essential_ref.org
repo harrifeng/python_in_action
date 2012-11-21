@@ -689,6 +689,7 @@
      f = Foo()
      print type(f)       # <class '__main__.Foo'>
    #+end_src
+** Modules, Packages
 
 	
 
