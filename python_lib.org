@@ -100,13 +100,44 @@
 	 t = string.Template('$var')
 	 print t.pattern.pattern
 	 
-	 # ===== Result is=====
+	 # =====Run Result=====
 	 #   (?P<escaped>\$) |	 # Escape sequence of two delimiters
 	 #   (?P<named>[_a-z][_a-z0-9]*)      |	  # delimiter and a Python identifier
 	 #   {(?P<braced>[_a-z][_a-z0-9]*)}   |	  # delimiter and a braced identifier
 	 #   (?P<invalid>)		# Other ill-formed delimiter exprs
 	 # )
       #+end_src
+    + 下面看一个全部重写pattern attribute的例子
+      #+begin_src python 
+        import re
+        import string
+        
+        class MyTemplate(string.Template):
+            delimiter = '{{'
+            pattern = r'''
+            \{\{(?:
+            (?P<escaped>\{\{)|
+            (?P<named>[_a-z][_a-z0-9]*)\}\}|
+            (?P<braced>[_a-z][_a-z0-9]*)\}\}|
+            (?P<invalide>)
+            )
+            '''
+        t = MyTemplate('''
+        {{{{
+        {{var}}
+        ''')
+        
+        print 'MATCHES:', t.pattern.findall(t.template)
+        print 'SUBSTITUTED:', t.safe_substitute(var='replacement')
+        
+        # =====Run Result=====
+        # MATCHES: [('{{', '', '', ''), ('', 'var', '', '')]
+        # SUBSTITUTED: 
+        # {{
+        # replacement
+        
+      #+end_src
+
 	
 
 
