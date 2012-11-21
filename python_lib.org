@@ -137,7 +137,8 @@
         # ============================================================================>
         
       #+end_src
-    + 对于更复杂的改变，全部重写pattern attribute是能够实现的
+    + 我们来看一下,默认的string.Template的pattern是什么样子的,可以通过新建一个string.Template
+      来查看
       #+begin_src python
         import string
         
