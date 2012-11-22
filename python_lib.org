@@ -37,7 +37,8 @@
 *** Templates
     + Templates是用来从某个"字典"中取得数据然后输出, 和 string自身的那种
       format print相比,最大的区别是,template是没有字符类型的概念的,不需要
-      知道是%d, %s, 还是%f
+      知道是%d, %s, 还是%f. 注意${var}和$var其实是一样的，子所以还要加上{}
+      是因为var是子字符串的情况。
       #+begin_src python
         import string
         
@@ -119,8 +120,17 @@
               'notunderscored' : 'not replaced',
               }
         
+        
         class MyTemplate(string.Template):
-            delimiter = '%'
+            """
+            For delimiter, the default value is $. Note that this should not be a 
+            regular expression.
+            For idpattern, this is the regular expression describing the pattern for non-braced
+            placeholders (the braces will be added automatically as appropriate). The default
+            value is the regular expression [_a-z][_a-z0-9]*. Here, we modify it to 
+            '[a-z]+_[a-z]+', which means it should be a word contains a '_'
+            """
+            delimiter = '%'  
             idpattern = '[a-z]+_[a-z]+'
         
         t = MyTemplate(template_text)
@@ -135,13 +145,19 @@
         #   Replaced  : replaced
         #   Ignored   : %notunderscored
         # ============================================================================>
-        
       #+end_src
-    + 我们来看一下,默认的string.Template的pattern是什么样子的,可以通过新建一个string.Template
+    + 除了更改idpattern，我们还可以选择更改pattern attribute,idpattern属于简单的修改(无法修改加括号的情况),
+      而更改pattern attribute那就很高端了,它可以更改四个属性:
+      1) escaped 确定escape sequence
+      2) 不加大括号的情况下的被替换字符形状
+      3) 加大括号的情况下被替换字符的形状
+      4) 某些特殊的情况,比如只有一个delimiter的情况
+      下面,我们来看一下,默认的string.Template的pattern是什么样子的,可以通过新建一个string.Template
       来查看
       #+begin_src python
         import string
         
+        # Construct a string.Template instance with a simple string argument
         t = string.Template('$var')
         print t.pattern.pattern
         
@@ -156,7 +172,9 @@
         # ============================================================================>
         
       #+end_src
-    + 下面看一个全部重写pattern attribute的例子
+    + 下面看一个通过全部重写pattern attribute来进行字符串替换的例子, 可以看到这个例子中非常变态
+      的把delimiter设置成了{{,这样的话,被替换字符带大括号的情况下是需要重新写的,下面例子中把它
+      设置成了和不带大括号的<named>一样
       #+begin_src python 
         import re
         import string
@@ -187,9 +205,3 @@
         # replacement
         # ============================================================================>
       #+end_src
-
-	
-
-
-
-    
