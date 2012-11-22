@@ -205,3 +205,93 @@
         # replacement
         # ============================================================================>
       #+end_src
+** textwrap--Formatting Text Paragraphs
+*** Example Data
+*** Filling Paragraphs
+    + fill()函数把文本作为输入,制作输出
+      #+begin_src python
+        import textwrap
+        
+        sample_text = '''
+            The textwrap module can be used to format text for output in
+            situtations where pretty-prints is desired. It offers 
+            programmatic functionality similar to the paragraph wrapping
+            or filling features found inmany text editors.
+           '''
+        
+        print 'No dedent:\n'
+        print textwrap.fill(sample_text, width=50)   
+        
+        # Output:
+        # <============================================================================
+        # No dedent:
+        
+        #      The textwrap module can be used to format
+        # text for output in     situtations where pretty-
+        # prints is desired. It offers      programmatic
+        # functionality similar to the paragraph wrapping
+        # or filling features found inmany text editors.
+        # ============================================================================>
+      #+end_src
+    + 效果貌似不理想,还是存在intent
+*** Removing Existing Indentation
+    + 去掉intent的方法:
+      #+begin_src python
+        import textwrap
+        
+        sample_text = '''
+            The textwrap module can be used to format text for output in
+            situtations where pretty-prints is desired. It offers 
+            programmatic functionality similar to the paragraph wrapping
+            or filling features found inmany text editors.
+           '''
+        
+        
+        print 'Dedent:'
+        print textwrap.dedent(sample_text)
+        
+        # Output:
+        # <============================================================================
+        # Dedent:
+        
+        # The textwrap module can be used to format text for output in
+        # situtations where pretty-prints is desired. It offers 
+        # programmatic functionality similar to the paragraph wrapping
+        # or filling features found inmany text editors.
+        # ============================================================================>
+      #+end_src
+*** Combining Dedent and Fill
+    + 吧dedented的text作为参数传给fill()就完成了两者的结合
+            #+begin_src python
+              import textwrap
+              
+              sample_text = '''
+                  The textwrap module can be used to format text for output in
+                  situtations where pretty-prints is desired. It offers 
+                  programmatic functionality similar to the paragraph wrapping
+                  or filling features found inmany text editors.
+                 '''
+              dedented_text = textwrap.dedent(sample_text).strip()
+              for width in [45, 70]:
+                  print '%d Columns:\n' % width
+                  print textwrap.fill(dedented_text, width=width)
+              
+              # Output:
+              # <============================================================================
+              # 45 Columns:
+              
+              # The textwrap module can be used to format
+              # text for output in situtations where pretty-
+              # prints is desired. It offers  programmatic
+              # functionality similar to the paragraph
+              # wrapping or filling features found inmany
+              # text editors.
+              # 70 Columns:
+              
+              # The textwrap module can be used to format text for output in
+              # situtations where pretty-prints is desired. It offers  programmatic
+              # functionality similar to the paragraph wrapping or filling features
+              # found inmany text editors. 
+              # ============================================================================>
+      #+end_src
+*** 
