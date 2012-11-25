@@ -574,6 +574,83 @@
         #   .....'abbb'
         # ============================================================================>
       #+end_src
+    + 默认的正则表达式是贪婪匹配,可以通过在pattern最后加上?来关闭贪婪匹配
+      #+begin_src python
+        import re 
+        
+        def test_patterns(text, patterns=[]):
+            """Given source text and a list of patterns, look for
+            matches for each pattern within the text and print
+            them to stdout.
+            """
+            for pattern, desc in patterns:
+                print 'Pattern %r (%s)\n' % (pattern, desc)
+                print '  %r'  % text
+                for match in re.finditer(pattern, text):
+                    s = match.start()
+                    e = match.end()
+                    substr = text[s:e]
+                    n_backslashes = text[:s].count('\\')
+                    prefix = '.' * (s + n_backslashes)
+                    print '  %s%r' % (prefix, substr)
+                print
+            return
+        
+        if __name__ == '__main__':
+            test_patterns('abbaaabbbbaaaaa',
+                          [('ab*?',       'a followed by zero or more b'),
+                           ('ab+?',       'a followed by one or more b'),
+                           ('ab??',       'a followed by zero or one b'),
+                           ('ab{3}?',     'a followed by three b'),
+                           ('ab{2,3}?',   'a followed by tow to  three b'),
+                           ])
+        # Output:
+        # <============================================================================
+        # Pattern 'ab*?' (a followed by zero or more b)
+        # 
+        #   'abbaaabbbbaaaaa'
+        #   'a'
+        #   ...'a'
+        #   ....'a'
+        #   .....'a'
+        #   ..........'a'
+        #   ...........'a'
+        #   ............'a'
+        #   .............'a'
+        #   ..............'a'
+        # 
+        # Pattern 'ab+?' (a followed by one or more b)
+        # 
+        #   'abbaaabbbbaaaaa'
+        #   'ab'
+        #   .....'ab'
+        # 
+        # Pattern 'ab??' (a followed by zero or one b)
+        # 
+        #   'abbaaabbbbaaaaa'
+        #   'a'
+        #   ...'a'
+        #   ....'a'
+        #   .....'a'
+        #   ..........'a'
+        #   ...........'a'
+        #   ............'a'
+        #   .............'a'
+        #   ..............'a'
+        # 
+        # Pattern 'ab{3}?' (a followed by three b)
+        # 
+        #   'abbaaabbbbaaaaa'
+        #   .....'abbb'
+        # 
+        # Pattern 'ab{2,3}?' (a followed by tow to  three b)
+        # 
+        #   'abbaaabbbbaaaaa'
+        #   'abb'
+        #   .....'abb'
+        # ============================================================================>
+      #+end_src
+    + Character Sets
 
 
 
