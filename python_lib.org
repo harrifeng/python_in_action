@@ -452,443 +452,443 @@
         # ============================================================================>
       #+end_src
 **** Repetition
-    + 下面是关于正则表达式中表达"重复"的方式,有如下五种:
-      1) * 表示0或者多次重复
-      2) + 表示1或者多次重复
-      3) ? 表示0或者1次重复
-      4) {m}表示必须重复m次
-      5) {m,n}表示重复最少m次,最多n次: {m,}表示最少m次,多了不限
-      #+begin_src python
-        import re 
-        
-        def test_patterns(text, patterns=[]):
-            """Given source text and a list of patterns, look for
-            matches for each pattern within the text and print
-            them to stdout.
-            """
-            for pattern, desc in patterns:
-                print 'Pattern %r (%s)\n' % (pattern, desc)
-                print '  %r'  % text
-                for match in re.finditer(pattern, text):
-                    s = match.start()
-                    e = match.end()
-                    substr = text[s:e]
-                    n_backslashes = text[:s].count('\\')
-                    prefix = '.' * (s + n_backslashes)
-                    print '  %s%r' % (prefix, substr)
-                print
-            return
-        
-        if __name__ == '__main__':
-            test_patterns('abbaaabbbbaaaaa',
-                          [('ab*',       'a followed by zero or more b'),
-                           ('ab+',       'a followed by one or more b'),
-                           ('ab?',       'a followed by zero or one b'),
-                           ('ab{3}',     'a followed by three b'),
-                           ('ab{2,3}',   'a followed by tow to  three b'),
-                           ])
-        # Output:
-        # <============================================================================
-        #  Pattern 'ab*' (a followed by zero or more b)
-        # 
-        #   'abbaaabbbbaaaaa'
-        #   'abb'
-        #   ...'a'
-        #   ....'a'
-        #   .....'abbbb'
-        #   ..........'a'
-        #   ...........'a'
-        #   ............'a'
-        #   .............'a'
-        #   ..............'a'
-        # 
-        # Pattern 'ab+' (a followed by one or more b)
-        # 
-        #   'abbaaabbbbaaaaa'
-        #   'abb'
-        #   .....'abbbb'
-        # 
-        # Pattern 'ab?' (a followed by zero or one b)
-        # 
-        #   'abbaaabbbbaaaaa'
-        #   'ab'
-        #   ...'a'
-        #   ....'a'
-        #   .....'ab'
-        #   ..........'a'
-        #   ...........'a'
-        #   ............'a'
-        #   .............'a'
-        #   ..............'a'
-        # 
-        # Pattern 'ab{3}' (a followed by three b)
-        # 
-        #   'abbaaabbbbaaaaa'
-        #   .....'abbb'
-        # 
-        # Pattern 'ab{2,3}' (a followed by tow to  three b)
-        # 
-        #   'abbaaabbbbaaaaa'
-        #   'abb'
-        #   .....'abbb'
-        #  Pattern 'ab*' (a followed by zero or more b)
-        # 
-        #   'abbaaabbbbaaaaa'
-        #   'abb'
-        #   ...'a'
-        #   ....'a'
-        #   .....'abbbb'
-        #   ..........'a'
-        #   ...........'a'
-        #   ............'a'
-        #   .............'a'
-        #   ..............'a'
-        # 
-        # Pattern 'ab+' (a followed by one or more b)
-        # 
-        #   'abbaaabbbbaaaaa'
-        #   'abb'
-        #   .....'abbbb'
-        # 
-        # Pattern 'ab?' (a followed by zero or one b)
-        # 
-        #   'abbaaabbbbaaaaa'
-        #   'ab'
-        #   ...'a'
-        #   ....'a'
-        #   .....'ab'
-        #   ..........'a'
-        #   ...........'a'
-        #   ............'a'
-        #   .............'a'
-        #   ..............'a'
-        # 
-        # Pattern 'ab{3}' (a followed by three b)
-        # 
-        #   'abbaaabbbbaaaaa'
-        #   .....'abbb'
-        # 
-        # Pattern 'ab{2,3}' (a followed by tow to  three b)
-        # 
-        #   'abbaaabbbbaaaaa'
-        #   'abb'
-        #   .....'abbb'
-        # ============================================================================>
-      #+end_src
-    + 默认的正则表达式是贪婪匹配,可以通过在pattern最后加上?来关闭贪婪匹配
-      #+begin_src python
-        import re 
-        
-        def test_patterns(text, patterns=[]):
-            """Given source text and a list of patterns, look for
-            matches for each pattern within the text and print
-            them to stdout.
-            """
-            for pattern, desc in patterns:
-                print 'Pattern %r (%s)\n' % (pattern, desc)
-                print '  %r'  % text
-                for match in re.finditer(pattern, text):
-                    s = match.start()
-                    e = match.end()
-                    substr = text[s:e]
-                    n_backslashes = text[:s].count('\\')
-                    prefix = '.' * (s + n_backslashes)
-                    print '  %s%r' % (prefix, substr)
-                print
-            return
-        
-        if __name__ == '__main__':
-            test_patterns('abbaaabbbbaaaaa',
-                          [('ab*?',       'a followed by zero or more b'),
-                           ('ab+?',       'a followed by one or more b'),
-                           ('ab??',       'a followed by zero or one b'),
-                           ('ab{3}?',     'a followed by three b'),
-                           ('ab{2,3}?',   'a followed by tow to  three b'),
-                           ])
-        # Output:
-        # <============================================================================
-        # Pattern 'ab*?' (a followed by zero or more b)
-        # 
-        #   'abbaaabbbbaaaaa'
-        #   'a'
-        #   ...'a'
-        #   ....'a'
-        #   .....'a'
-        #   ..........'a'
-        #   ...........'a'
-        #   ............'a'
-        #   .............'a'
-        #   ..............'a'
-        # 
-        # Pattern 'ab+?' (a followed by one or more b)
-        # 
-        #   'abbaaabbbbaaaaa'
-        #   'ab'
-        #   .....'ab'
-        # 
-        # Pattern 'ab??' (a followed by zero or one b)
-        # 
-        #   'abbaaabbbbaaaaa'
-        #   'a'
-        #   ...'a'
-        #   ....'a'
-        #   .....'a'
-        #   ..........'a'
-        #   ...........'a'
-        #   ............'a'
-        #   .............'a'
-        #   ..............'a'
-        # 
-        # Pattern 'ab{3}?' (a followed by three b)
-        # 
-        #   'abbaaabbbbaaaaa'
-        #   .....'abbb'
-        # 
-        # Pattern 'ab{2,3}?' (a followed by tow to  three b)
-        # 
-        #   'abbaaabbbbaaaaa'
-        #   'abb'
-        #   .....'abb'
-        # ============================================================================>
-      #+end_src
+     + 下面是关于正则表达式中表达"重复"的方式,有如下五种:
+       1) * 表示0或者多次重复
+       2) + 表示1或者多次重复
+       3) ? 表示0或者1次重复
+       4) {m}表示必须重复m次
+       5) {m,n}表示重复最少m次,最多n次: {m,}表示最少m次,多了不限
+       #+begin_src python
+         import re 
+         
+         def test_patterns(text, patterns=[]):
+             """Given source text and a list of patterns, look for
+             matches for each pattern within the text and print
+             them to stdout.
+             """
+             for pattern, desc in patterns:
+                 print 'Pattern %r (%s)\n' % (pattern, desc)
+                 print '  %r'  % text
+                 for match in re.finditer(pattern, text):
+                     s = match.start()
+                     e = match.end()
+                     substr = text[s:e]
+                     n_backslashes = text[:s].count('\\')
+                     prefix = '.' * (s + n_backslashes)
+                     print '  %s%r' % (prefix, substr)
+                 print
+             return
+         
+         if __name__ == '__main__':
+             test_patterns('abbaaabbbbaaaaa',
+                           [('ab*',       'a followed by zero or more b'),
+                            ('ab+',       'a followed by one or more b'),
+                            ('ab?',       'a followed by zero or one b'),
+                            ('ab{3}',     'a followed by three b'),
+                            ('ab{2,3}',   'a followed by tow to  three b'),
+                            ])
+         # Output:
+         # <============================================================================
+         #  Pattern 'ab*' (a followed by zero or more b)
+         # 
+         #   'abbaaabbbbaaaaa'
+         #   'abb'
+         #   ...'a'
+         #   ....'a'
+         #   .....'abbbb'
+         #   ..........'a'
+         #   ...........'a'
+         #   ............'a'
+         #   .............'a'
+         #   ..............'a'
+         # 
+         # Pattern 'ab+' (a followed by one or more b)
+         # 
+         #   'abbaaabbbbaaaaa'
+         #   'abb'
+         #   .....'abbbb'
+         # 
+         # Pattern 'ab?' (a followed by zero or one b)
+         # 
+         #   'abbaaabbbbaaaaa'
+         #   'ab'
+         #   ...'a'
+         #   ....'a'
+         #   .....'ab'
+         #   ..........'a'
+         #   ...........'a'
+         #   ............'a'
+         #   .............'a'
+         #   ..............'a'
+         # 
+         # Pattern 'ab{3}' (a followed by three b)
+         # 
+         #   'abbaaabbbbaaaaa'
+         #   .....'abbb'
+         # 
+         # Pattern 'ab{2,3}' (a followed by tow to  three b)
+         # 
+         #   'abbaaabbbbaaaaa'
+         #   'abb'
+         #   .....'abbb'
+         #  Pattern 'ab*' (a followed by zero or more b)
+         # 
+         #   'abbaaabbbbaaaaa'
+         #   'abb'
+         #   ...'a'
+         #   ....'a'
+         #   .....'abbbb'
+         #   ..........'a'
+         #   ...........'a'
+         #   ............'a'
+         #   .............'a'
+         #   ..............'a'
+         # 
+         # Pattern 'ab+' (a followed by one or more b)
+         # 
+         #   'abbaaabbbbaaaaa'
+         #   'abb'
+         #   .....'abbbb'
+         # 
+         # Pattern 'ab?' (a followed by zero or one b)
+         # 
+         #   'abbaaabbbbaaaaa'
+         #   'ab'
+         #   ...'a'
+         #   ....'a'
+         #   .....'ab'
+         #   ..........'a'
+         #   ...........'a'
+         #   ............'a'
+         #   .............'a'
+         #   ..............'a'
+         # 
+         # Pattern 'ab{3}' (a followed by three b)
+         # 
+         #   'abbaaabbbbaaaaa'
+         #   .....'abbb'
+         # 
+         # Pattern 'ab{2,3}' (a followed by tow to  three b)
+         # 
+         #   'abbaaabbbbaaaaa'
+         #   'abb'
+         #   .....'abbb'
+         # ============================================================================>
+       #+end_src
+     + 默认的正则表达式是贪婪匹配,可以通过在pattern最后加上?来关闭贪婪匹配
+       #+begin_src python
+         import re 
+         
+         def test_patterns(text, patterns=[]):
+             """Given source text and a list of patterns, look for
+             matches for each pattern within the text and print
+             them to stdout.
+             """
+             for pattern, desc in patterns:
+                 print 'Pattern %r (%s)\n' % (pattern, desc)
+                 print '  %r'  % text
+                 for match in re.finditer(pattern, text):
+                     s = match.start()
+                     e = match.end()
+                     substr = text[s:e]
+                     n_backslashes = text[:s].count('\\')
+                     prefix = '.' * (s + n_backslashes)
+                     print '  %s%r' % (prefix, substr)
+                 print
+             return
+         
+         if __name__ == '__main__':
+             test_patterns('abbaaabbbbaaaaa',
+                           [('ab*?',       'a followed by zero or more b'),
+                            ('ab+?',       'a followed by one or more b'),
+                            ('ab??',       'a followed by zero or one b'),
+                            ('ab{3}?',     'a followed by three b'),
+                            ('ab{2,3}?',   'a followed by tow to  three b'),
+                            ])
+         # Output:
+         # <============================================================================
+         # Pattern 'ab*?' (a followed by zero or more b)
+         # 
+         #   'abbaaabbbbaaaaa'
+         #   'a'
+         #   ...'a'
+         #   ....'a'
+         #   .....'a'
+         #   ..........'a'
+         #   ...........'a'
+         #   ............'a'
+         #   .............'a'
+         #   ..............'a'
+         # 
+         # Pattern 'ab+?' (a followed by one or more b)
+         # 
+         #   'abbaaabbbbaaaaa'
+         #   'ab'
+         #   .....'ab'
+         # 
+         # Pattern 'ab??' (a followed by zero or one b)
+         # 
+         #   'abbaaabbbbaaaaa'
+         #   'a'
+         #   ...'a'
+         #   ....'a'
+         #   .....'a'
+         #   ..........'a'
+         #   ...........'a'
+         #   ............'a'
+         #   .............'a'
+         #   ..............'a'
+         # 
+         # Pattern 'ab{3}?' (a followed by three b)
+         # 
+         #   'abbaaabbbbaaaaa'
+         #   .....'abbb'
+         # 
+         # Pattern 'ab{2,3}?' (a followed by tow to  three b)
+         # 
+         #   'abbaaabbbbaaaaa'
+         #   'abb'
+         #   .....'abb'
+         # ============================================================================>
+       #+end_src
 **** Character Sets
-    + 所谓Character Sets就是一组的字符里面任何一个匹配成功都算成功,比如对于[ab]来说,a和b都
-      算匹配成功
-      #+begin_src python 
-        import re 
-        
-        def test_patterns(text, patterns=[]):
-            """Given source text and a list of patterns, look for
-            matches for each pattern within the text and print
-            them to stdout.
-            """
-            for pattern, desc in patterns:
-                print 'Pattern %r (%s)\n' % (pattern, desc)
-                print '  %r'  % text
-                for match in re.finditer(pattern, text):
-                    s = match.start()
-                    e = match.end()
-                    substr = text[s:e]
-                    n_backslashes = text[:s].count('\\')
-                    prefix = '.' * (s + n_backslashes)
-                    print '  %s%r' % (prefix, substr)
-                print
-            return
-        
-        if __name__ == '__main__':
-            test_patterns('abbaaabbbbaaaaa',
-                          [('[ab]',       'either a or b'),
-                           ('a[ab]+',      'a followed by 1 or more a or b'),
-                           ('a[ab]+?',     'a followed by 1 or more a or b, not greedy'),
-                           ])
-        # Output:
-        # <============================================================================
-        # Pattern '[ab]' (either a or b)
-        # 
-        #   'abbaaabbbbaaaaa'
-        #   'a'
-        #   .'b'
-        #   ..'b'
-        #   ...'a'
-        #   ....'a'
-        #   .....'a'
-        #   ......'b'
-        #   .......'b'
-        #   ........'b'
-        #   .........'b'
-        #   ..........'a'
-        #   ...........'a'
-        #   ............'a'
-        #   .............'a'
-        #   ..............'a'
-        # 
-        # Pattern 'a[ab]+' (a followed by 1 or more a or b)
-        # 
-        #   'abbaaabbbbaaaaa'
-        #   'abbaaabbbbaaaaa'
-        # 
-        # Pattern 'a[ab]+?' (a followed by 1 or more a or b, not greedy)
-        # 
-        #   'abbaaabbbbaaaaa'
-        #   'ab'
-        #   ...'aa'
-        #   .....'ab'
-        #   ..........'aa'
-        #   ............'aa'
-        # ============================================================================>
-      #+end_src
-    + 还可以用carat(^)加在character sets里面来排除某些字符
-      #+begin_src python 
-        import re 
-        
-        def test_patterns(text, patterns=[]):
-            """Given source text and a list of patterns, look for
-            matches for each pattern within the text and print
-            them to stdout.
-            """
-            for pattern, desc in patterns:
-                print 'Pattern %r (%s)\n' % (pattern, desc)
-                print '  %r'  % text
-                for match in re.finditer(pattern, text):
-                    s = match.start()
-                    e = match.end()
-                    substr = text[s:e]
-                    n_backslashes = text[:s].count('\\')
-                    prefix = '.' * (s + n_backslashes)
-                    print '  %s%r' % (prefix, substr)
-                print
-            return
-        
-        if __name__ == '__main__':
-            test_patterns(
-            'This is some text -- with punctuation.',
-            [ ('[^-. ]+', 'sequences without -, ., or space'),
-              ])
-        
-        # Output:
-        # <============================================================================
-        # Pattern '[^-. ]+' (sequences without -, ., or space)
-        # 
-        #   'This is some text -- with punctuation.'
-        #   'This'
-        #   .....'is'
-        #   ........'some'
-        #   .............'text'
-        #   .....................'with'
-        #   ..........................'punctuation' 
-        # ============================================================================>
-      #+end_src
-    + 如果字符多的情况下,一个个在[]中列出来显然不是特别现实,这种情况下character range就显得
-      特别有用,其使用方法就是在[]中写上ascii字符范围
-      #+begin_src python 
-        import re 
-        
-        def test_patterns(text, patterns=[]):
-            """Given source text and a list of patterns, look for
-            matches for each pattern within the text and print
-            them to stdout.
-            """
-            for pattern, desc in patterns:
-                print 'Pattern %r (%s)\n' % (pattern, desc)
-                print '  %r'  % text
-                for match in re.finditer(pattern, text):
-                    s = match.start()
-                    e = match.end()
-                    substr = text[s:e]
-                    n_backslashes = text[:s].count('\\')
-                    prefix = '.' * (s + n_backslashes)
-                    print '  %s%r' % (prefix, substr)
-                print
-            return
-        
-        if __name__ == '__main__':
-            test_patterns(
-            'This is some text -- with punctuation.',
-            [ ('[a-z]+', 'sequences of lowercase letters'),
-              ('[A-Z]+', 'sequences of uppercase letters'),
-              ('[a-zA-Z]+', 'sequences of lowercase or uppercase letters'),
-              ('[A-Z][a-z]+', 'one uppercase followed by lowercase'),
-              ])
-        
-        # Output:
-        # <============================================================================
-        # Pattern '[a-z]+' (sequences of lowercase letters)
-        # 
-        #   'This is some text -- with punctuation.'
-        #   .'his'
-        #   .....'is'
-        #   ........'some'
-        #   .............'text'
-        #   .....................'with'
-        #   ..........................'punctuation'
-        # 
-        # Pattern '[A-Z]+' (sequences of uppercase letters)
-        # 
-        #   'This is some text -- with punctuation.'
-        #   'T'
-        # 
-        # Pattern '[a-zA-Z]+' (sequences of lowercase or uppercase letters)
-        # 
-        #   'This is some text -- with punctuation.'
-        #   'This'
-        #   .....'is'
-        #   ........'some'
-        #   .............'text'
-        #   .....................'with'
-        #   ..........................'punctuation'
-        # 
-        # Pattern '[A-Z][a-z]+' (one uppercase followed by lowercase)
-        # 
-        #   'This is some text -- with punctuation.'
-        #   'This'
-        # ============================================================================>
-      #+end_src
-    + period(.)是非常特殊的一种character sets,在匹配里面,它可以表示任意字符,也就是说它用
-      character set表示的话就是[ascii开始-ascii结束], period如果再和前面的五种重复一块
-      使用,会产生非常长的结果,比如下面的'a.*b', 最后产生了一个匹配'abbaaabbbb',使用非贪婪匹
-      配会好很多,比如下面的'a.*?b',得到的结果也更合理.
-      #+begin_src python 
-        import re 
-        
-        def test_patterns(text, patterns=[]):
-            """Given source text and a list of patterns, look for
-            matches for each pattern within the text and print
-            them to stdout.
-            """
-            for pattern, desc in patterns:
-                print 'Pattern %r (%s)\n' % (pattern, desc)
-                print '  %r'  % text
-                for match in re.finditer(pattern, text):
-                    s = match.start()
-                    e = match.end()
-                    substr = text[s:e]
-                    n_backslashes = text[:s].count('\\')
-                    prefix = '.' * (s + n_backslashes)
-                    print '  %s%r' % (prefix, substr)
-                print
-            return
-        
-        if __name__ == '__main__':
-            test_patterns('abbaaabbbbaaaaa',
-                          [('a.',         'a followed by any one character'),
-                           ('b.',         'b followed by any one character'),
-                           ('a.*b',      'a followed by anything, ending in b'),
-                           ('a.*?b',     'a followed by anything, ending in b'),
-                           ])
-        
-        # # Output:
-        # # <============================================================================
-        # Pattern 'a.' (a followed by any one character)
-        # 
-        #   'abbaaabbbbaaaaa'
-        #   'ab'
-        #   ...'aa'
-        #   .....'ab'
-        #   ..........'aa'
-        #   ............'aa'
-        # 
-        # Pattern 'b.' (b followed by any one character)
-        # 
-        #   'abbaaabbbbaaaaa'
-        #   .'bb'
-        #   ......'bb'
-        #   ........'bb'
-        # 
-        # Pattern 'a.*b' (a followed by anything, ending in b)
-        # 
-        #   'abbaaabbbbaaaaa'
-        #   'abbaaabbbb'
-        # 
-        # Pattern 'a.*?b' (a followed by anything, ending in b)
-        # 
-        #   'abbaaabbbbaaaaa'
-        #   'ab'
-        #   ...'aaab'
-        # ============================================================================>
-      #+end_src
-
+     + 所谓Character Sets就是一组的字符里面任何一个匹配成功都算成功,比如对于[ab]来说,a和b都
+       算匹配成功
+       #+begin_src python 
+         import re 
+         
+         def test_patterns(text, patterns=[]):
+             """Given source text and a list of patterns, look for
+             matches for each pattern within the text and print
+             them to stdout.
+             """
+             for pattern, desc in patterns:
+                 print 'Pattern %r (%s)\n' % (pattern, desc)
+                 print '  %r'  % text
+                 for match in re.finditer(pattern, text):
+                     s = match.start()
+                     e = match.end()
+                     substr = text[s:e]
+                     n_backslashes = text[:s].count('\\')
+                     prefix = '.' * (s + n_backslashes)
+                     print '  %s%r' % (prefix, substr)
+                 print
+             return
+         
+         if __name__ == '__main__':
+             test_patterns('abbaaabbbbaaaaa',
+                           [('[ab]',       'either a or b'),
+                            ('a[ab]+',      'a followed by 1 or more a or b'),
+                            ('a[ab]+?',     'a followed by 1 or more a or b, not greedy'),
+                            ])
+         # Output:
+         # <============================================================================
+         # Pattern '[ab]' (either a or b)
+         # 
+         #   'abbaaabbbbaaaaa'
+         #   'a'
+         #   .'b'
+         #   ..'b'
+         #   ...'a'
+         #   ....'a'
+         #   .....'a'
+         #   ......'b'
+         #   .......'b'
+         #   ........'b'
+         #   .........'b'
+         #   ..........'a'
+         #   ...........'a'
+         #   ............'a'
+         #   .............'a'
+         #   ..............'a'
+         # 
+         # Pattern 'a[ab]+' (a followed by 1 or more a or b)
+         # 
+         #   'abbaaabbbbaaaaa'
+         #   'abbaaabbbbaaaaa'
+         # 
+         # Pattern 'a[ab]+?' (a followed by 1 or more a or b, not greedy)
+         # 
+         #   'abbaaabbbbaaaaa'
+         #   'ab'
+         #   ...'aa'
+         #   .....'ab'
+         #   ..........'aa'
+         #   ............'aa'
+         # ============================================================================>
+       #+end_src
+     + 还可以用carat(^)加在character sets里面来排除某些字符
+       #+begin_src python 
+         import re 
+         
+         def test_patterns(text, patterns=[]):
+             """Given source text and a list of patterns, look for
+             matches for each pattern within the text and print
+             them to stdout.
+             """
+             for pattern, desc in patterns:
+                 print 'Pattern %r (%s)\n' % (pattern, desc)
+                 print '  %r'  % text
+                 for match in re.finditer(pattern, text):
+                     s = match.start()
+                     e = match.end()
+                     substr = text[s:e]
+                     n_backslashes = text[:s].count('\\')
+                     prefix = '.' * (s + n_backslashes)
+                     print '  %s%r' % (prefix, substr)
+                 print
+             return
+         
+         if __name__ == '__main__':
+             test_patterns(
+             'This is some text -- with punctuation.',
+             [ ('[^-. ]+', 'sequences without -, ., or space'),
+               ])
+         
+         # Output:
+         # <============================================================================
+         # Pattern '[^-. ]+' (sequences without -, ., or space)
+         # 
+         #   'This is some text -- with punctuation.'
+         #   'This'
+         #   .....'is'
+         #   ........'some'
+         #   .............'text'
+         #   .....................'with'
+         #   ..........................'punctuation' 
+         # ============================================================================>
+       #+end_src
+     + 如果字符多的情况下,一个个在[]中列出来显然不是特别现实,这种情况下character range就显得
+       特别有用,其使用方法就是在[]中写上ascii字符范围
+       #+begin_src python 
+         import re 
+         
+         def test_patterns(text, patterns=[]):
+             """Given source text and a list of patterns, look for
+             matches for each pattern within the text and print
+             them to stdout.
+             """
+             for pattern, desc in patterns:
+                 print 'Pattern %r (%s)\n' % (pattern, desc)
+                 print '  %r'  % text
+                 for match in re.finditer(pattern, text):
+                     s = match.start()
+                     e = match.end()
+                     substr = text[s:e]
+                     n_backslashes = text[:s].count('\\')
+                     prefix = '.' * (s + n_backslashes)
+                     print '  %s%r' % (prefix, substr)
+                 print
+             return
+         
+         if __name__ == '__main__':
+             test_patterns(
+             'This is some text -- with punctuation.',
+             [ ('[a-z]+', 'sequences of lowercase letters'),
+               ('[A-Z]+', 'sequences of uppercase letters'),
+               ('[a-zA-Z]+', 'sequences of lowercase or uppercase letters'),
+               ('[A-Z][a-z]+', 'one uppercase followed by lowercase'),
+               ])
+         
+         # Output:
+         # <============================================================================
+         # Pattern '[a-z]+' (sequences of lowercase letters)
+         # 
+         #   'This is some text -- with punctuation.'
+         #   .'his'
+         #   .....'is'
+         #   ........'some'
+         #   .............'text'
+         #   .....................'with'
+         #   ..........................'punctuation'
+         # 
+         # Pattern '[A-Z]+' (sequences of uppercase letters)
+         # 
+         #   'This is some text -- with punctuation.'
+         #   'T'
+         # 
+         # Pattern '[a-zA-Z]+' (sequences of lowercase or uppercase letters)
+         # 
+         #   'This is some text -- with punctuation.'
+         #   'This'
+         #   .....'is'
+         #   ........'some'
+         #   .............'text'
+         #   .....................'with'
+         #   ..........................'punctuation'
+         # 
+         # Pattern '[A-Z][a-z]+' (one uppercase followed by lowercase)
+         # 
+         #   'This is some text -- with punctuation.'
+         #   'This'
+         # ============================================================================>
+       #+end_src
+     + period(.)是非常特殊的一种character sets,在匹配里面,它可以表示任意字符,也就是说它用
+       character set表示的话就是[ascii开始-ascii结束], period如果再和前面的五种重复一块
+       使用,会产生非常长的结果,比如下面的'a.*b', 最后产生了一个匹配'abbaaabbbb',使用非贪婪匹
+       配会好很多,比如下面的'a.*?b',得到的结果也更合理.
+       #+begin_src python 
+         import re 
+         
+         def test_patterns(text, patterns=[]):
+             """Given source text and a list of patterns, look for
+             matches for each pattern within the text and print
+             them to stdout.
+             """
+             for pattern, desc in patterns:
+                 print 'Pattern %r (%s)\n' % (pattern, desc)
+                 print '  %r'  % text
+                 for match in re.finditer(pattern, text):
+                     s = match.start()
+                     e = match.end()
+                     substr = text[s:e]
+                     n_backslashes = text[:s].count('\\')
+                     prefix = '.' * (s + n_backslashes)
+                     print '  %s%r' % (prefix, substr)
+                 print
+             return
+         
+         if __name__ == '__main__':
+             test_patterns('abbaaabbbbaaaaa',
+                           [('a.',         'a followed by any one character'),
+                            ('b.',         'b followed by any one character'),
+                            ('a.*b',      'a followed by anything, ending in b'),
+                            ('a.*?b',     'a followed by anything, ending in b'),
+                            ])
+         
+         # # Output:
+         # # <============================================================================
+         # Pattern 'a.' (a followed by any one character)
+         # 
+         #   'abbaaabbbbaaaaa'
+         #   'ab'
+         #   ...'aa'
+         #   .....'ab'
+         #   ..........'aa'
+         #   ............'aa'
+         # 
+         # Pattern 'b.' (b followed by any one character)
+         # 
+         #   'abbaaabbbbaaaaa'
+         #   .'bb'
+         #   ......'bb'
+         #   ........'bb'
+         # 
+         # Pattern 'a.*b' (a followed by anything, ending in b)
+         # 
+         #   'abbaaabbbbaaaaa'
+         #   'abbaaabbbb'
+         # 
+         # Pattern 'a.*?b' (a followed by anything, ending in b)
+         # 
+         #   'abbaaabbbbaaaaa'
+         #   'ab'
+         #   ...'aaab'
+         # ============================================================================>
+       #+end_src
       
-
-
-
+       
       
+      
+      
+       
