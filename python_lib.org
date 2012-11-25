@@ -225,7 +225,7 @@
         # Output:
         # <============================================================================
         # No dedent:
-        
+        #
         #      The textwrap module can be used to format
         # text for output in     situtations where pretty-
         # prints is desired. It offers      programmatic
@@ -253,7 +253,7 @@
         # Output:
         # <============================================================================
         # Dedent:
-        
+        #
         # The textwrap module can be used to format text for output in
         # situtations where pretty-prints is desired. It offers 
         # programmatic functionality similar to the paragraph wrapping
@@ -279,7 +279,7 @@
               # Output:
               # <============================================================================
               # 45 Columns:
-              
+              #
               # The textwrap module can be used to format
               # text for output in situtations where pretty-
               # prints is desired. It offers  programmatic
@@ -287,11 +287,294 @@
               # wrapping or filling features found inmany
               # text editors.
               # 70 Columns:
-              
+              #
               # The textwrap module can be used to format text for output in
               # situtations where pretty-prints is desired. It offers  programmatic
               # functionality similar to the paragraph wrapping or filling features
               # found inmany text editors. 
               # ============================================================================>
       #+end_src
-*** 
+*** Hanging Indentsy
+    + 输出的宽度可以被设置,同样的缩进大小也可以被设置
+      #+begin_src python
+        import textwrap
+        
+        sample_text = '''
+            The textwrap module can be used to format text for output in
+            situtations where pretty-prints is desired. It offers 
+            programmatic functionality similar to the paragraph wrapping
+            or filling features found inmany text editors.
+           '''
+        dedented_text = textwrap.dedent(sample_text).strip()
+        print textwrap.fill(dedented_text,
+                            initial_indent='',
+                            subsequent_indent=' ' * 4,
+                            width=50,
+                            )
+        
+        # Output:
+        # <============================================================================
+        # The textwrap module can be used to format text for
+        #     output in situtations where pretty-prints is
+        #     desired. It offers  programmatic functionality
+        #     similar to the paragraph wrapping or filling
+        #     features found inmany text editors.
+        # ============================================================================>
+      #+end_src
+** re--Regular Expressions
+*** Finding Patterns in Text
+    + re最常用的地方应该就是寻找字符串,也就是search()函数, 如果没有匹配字符串search()返回None,
+      如果找到了,则返回Match object
+    + Match object含有很多内容, 比如原始正则表达式是什么, 在哪里找到的,找到的字符串是什么
+      #+begin_src python
+        import re
+        
+        pattern = 'this'
+        text = 'Does this text match the pattern?'
+        
+        match = re.search(pattern, text)
+        
+        s = match.start()
+        e = match.end()
+        
+        print 'Found "%s"\n in "%s"\nfrom %d to %d ("%s")' % \
+          (match.re.pattern, match.string, s, e, text[s:e])
+        
+        # Output:
+        # <============================================================================
+        # Found "this"
+        #  in "Does this text match the pattern?"
+        # from 5 to 9 ("this") 
+        # ============================================================================>
+      #+end_src
+*** Compiling Expressions
+    + 如果经常使用,可以把某个字符通过compile()函数来转化成RegexObject
+      #+begin_src python
+        import re
+        
+        #Precompile the patterns
+        regexes = [re.compile(p)
+                   for p in ['this', 'that']
+                   ]
+        text = 'Does this text match the pattern?'
+        
+        print 'Text: %r\n' % text
+        
+        for regex in regexes:
+            print 'Seeking "%s" ->' % regex.pattern,
+        
+            if regex.search(text):
+                print 'match!'
+            else:
+                print 'no match'
+        
+        # Output:
+        # <============================================================================
+        # Text: 'Does this text match the pattern?'
+        #
+        # Seeking "this" -> match!
+        # Seeking "that" -> no match
+        # ============================================================================>
+      #+end_src
+    + 前面的module(search函数)会维护一个cache,但是cache大小有限制,使用了compiled expression后
+      我们可以直接减去查找cache的消耗
+    + 另外一个好处就是complied的话,可以使得工作都集中在导入阶段,如果有用户交互的话,时间差就不会被
+      用户所感觉到.
+*** Multiple Matches
+    + 如果有多个匹配的查找结果,我们就要依靠findall函数了. findall函数返回匹配的字符串结果
+      #+begin_src python
+        import re
+        
+        text = 'abbaaabbbbaaaaa'
+        pattern = 'ab'
+        
+        for match in re.findall(pattern, text):
+            print 'Found "%s"' % match
+        
+        # Output:
+        # <============================================================================
+        # Found "ab"
+        # Found "ab"
+        # ============================================================================>
+      #+end_src
+    + 如果想知道匹配字符串的位置可以使用finditer函数
+      #+begin_src python
+        import re
+        
+        text = 'abbaaabbbbaaaaa'
+        pattern = 'ab'
+        
+        for match in re.finditer(pattern, text):
+            s = match.start()
+            e = match.end()
+            print 'Found "%s" at %d:%d' % (text[s:e], s, e)
+        
+        # Output:
+        # <============================================================================
+        # Found "ab" at 0:2
+        # Found "ab" at 5:7
+        # ============================================================================>  
+      #+end_src
+*** Pattern Syntax
+    + 我们还可以通过像'.'这种meta character来使得我们的查找结果更明显
+      #+begin_src python
+        import re 
+        
+        def test_patterns(text, patterns=[]):
+            """Given source text and a list of patterns, look for
+            matches for each pattern within the text and print
+            them to stdout.
+            """
+            for pattern, desc in patterns:
+                print 'Pattern %r (%s)\n' % (pattern, desc)
+                print '  %r'  % text
+                for match in re.finditer(pattern, text):
+                    s = match.start()
+                    e = match.end()
+                    substr = text[s:e]
+                    n_backslashes = text[:s].count('\\')
+                    prefix = '.' * (s + n_backslashes)
+                    print '  %s%r' % (prefix, substr)
+                print
+            return
+        
+        if __name__ == '__main__':
+            test_patterns('abbaaabbbbaaaaa',
+                          [('ab', "'a' followd by 'b'"),
+                           ])
+        # Output:
+        # <============================================================================
+        # Pattern 'ab' ('a' followd by 'b')
+        #
+        #   'abbaaabbbbaaaaa'
+        #   'ab'
+        #   .....'ab' 
+        # ============================================================================>
+      #+end_src
+    + 下面是关于正则表达式中表达"重复"的方式,有如下五种:
+      1) * 表示0或者多次重复
+      2) + 表示1或者多次重复
+      3) ? 表示0或者1次重复
+      4) {m}表示必须重复m次
+      5) {m,n}表示重复最少m次,最多n次: {m,}表示最少m次,多了不限
+      #+begin_src python
+        import re 
+        
+        def test_patterns(text, patterns=[]):
+            """Given source text and a list of patterns, look for
+            matches for each pattern within the text and print
+            them to stdout.
+            """
+            for pattern, desc in patterns:
+                print 'Pattern %r (%s)\n' % (pattern, desc)
+                print '  %r'  % text
+                for match in re.finditer(pattern, text):
+                    s = match.start()
+                    e = match.end()
+                    substr = text[s:e]
+                    n_backslashes = text[:s].count('\\')
+                    prefix = '.' * (s + n_backslashes)
+                    print '  %s%r' % (prefix, substr)
+                print
+            return
+        
+        if __name__ == '__main__':
+            test_patterns('abbaaabbbbaaaaa',
+                          [('ab*',       'a followed by zero or more b'),
+                           ('ab+',       'a followed by one or more b'),
+                           ('ab?',       'a followed by zero or one b'),
+                           ('ab{3}',     'a followed by three b'),
+                           ('ab{2,3}',   'a followed by tow to  three b'),
+                           ])
+        # Output:
+        # <============================================================================
+        #  Pattern 'ab*' (a followed by zero or more b)
+        # 
+        #   'abbaaabbbbaaaaa'
+        #   'abb'
+        #   ...'a'
+        #   ....'a'
+        #   .....'abbbb'
+        #   ..........'a'
+        #   ...........'a'
+        #   ............'a'
+        #   .............'a'
+        #   ..............'a'
+        # 
+        # Pattern 'ab+' (a followed by one or more b)
+        # 
+        #   'abbaaabbbbaaaaa'
+        #   'abb'
+        #   .....'abbbb'
+        # 
+        # Pattern 'ab?' (a followed by zero or one b)
+        # 
+        #   'abbaaabbbbaaaaa'
+        #   'ab'
+        #   ...'a'
+        #   ....'a'
+        #   .....'ab'
+        #   ..........'a'
+        #   ...........'a'
+        #   ............'a'
+        #   .............'a'
+        #   ..............'a'
+        # 
+        # Pattern 'ab{3}' (a followed by three b)
+        # 
+        #   'abbaaabbbbaaaaa'
+        #   .....'abbb'
+        # 
+        # Pattern 'ab{2,3}' (a followed by tow to  three b)
+        # 
+        #   'abbaaabbbbaaaaa'
+        #   'abb'
+        #   .....'abbb'
+        #  Pattern 'ab*' (a followed by zero or more b)
+        # 
+        #   'abbaaabbbbaaaaa'
+        #   'abb'
+        #   ...'a'
+        #   ....'a'
+        #   .....'abbbb'
+        #   ..........'a'
+        #   ...........'a'
+        #   ............'a'
+        #   .............'a'
+        #   ..............'a'
+        # 
+        # Pattern 'ab+' (a followed by one or more b)
+        # 
+        #   'abbaaabbbbaaaaa'
+        #   'abb'
+        #   .....'abbbb'
+        # 
+        # Pattern 'ab?' (a followed by zero or one b)
+        # 
+        #   'abbaaabbbbaaaaa'
+        #   'ab'
+        # ...'a'
+        #   ....'a'
+        #   .....'ab'
+        #   ..........'a'
+        #   ...........'a'
+        #   ............'a'
+        #   .............'a'
+        #   ..............'a'
+        # 
+        # Pattern 'ab{3}' (a followed by three b)
+        # 
+        #   'abbaaabbbbaaaaa'
+        #   .....'abbb'
+        # 
+        # Pattern 'ab{2,3}' (a followed by tow to  three b)
+        # 
+        #   'abbaaabbbbaaaaa'
+        #   'abb'
+        #   .....'abbb'
+        # ============================================================================>
+      #+end_src
+
+
+
+      
