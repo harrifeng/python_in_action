@@ -981,6 +981,17 @@
        #+end_src
 **** Anchoring
      + 如果需要匹配字符串出现的相对位置(字串头,字串尾), 那么就需要用到"锚定"
+       | Code | Meaning                                            |
+       |------+----------------------------------------------------|
+       | (^)  | Start of string, or line                           |
+       | ($)  | End of string, or line                             |
+       | (\A) | Start of string                                    |
+       | (\Z) | End of string                                      |
+       | (\b) | Empty string at the beginning or end of a word     |
+       | (\B) | Empty string not at the beginning or end of a word |
+       
+     + 下面的例子中匹配开头用了'^\w+', 按说这里的匹配结尾应该用'\w+$', 但是
+       因为这个原始字符串中有句号".",它不属于任何的字母,所以我们用'\S*'来匹配.
        #+begin_src python 
          import re 
          
@@ -1061,11 +1072,64 @@
          #   ..............................'t'
          #   .................................'t'
          # ============================================================================>
-             
        #+end_src
-       
-     + 
+*** Constraining the Search
+    + 如果搜索范围有限定,比如一定是从可以用match()来替代search()
+       #+begin_src python 
+         import re 
+         
+         text = 'This is some text -- with punctuation.'
+         pattern = 'is'
+         
+         print 'Text    :', text
+         print 'Pattern :', pattern
+         
+         m = re.match(pattern, text)
+         print 'Match   :', m
+         s = re.search(pattern, text)
+         print 'Search  :', s
+         
+         # Output:
+         # <============================================================================
+         # Text    : This is some text -- with punctuation.
+         # Pattern : is
+         # Match   : None
+         # Search  : <_sre.SRE_Match object at 0x02642138>
+         # ============================================================================>
+       #+end_src
+    + search函数还可以接受额外的参数来确定搜索范围, 下面的例子其实就是一个效率较差版本的iterall()
+      #+begin_src python
+        import re
+        
+        text = 'This is some text -- with punctuation.'
+        pattern = re.compile(r'\b\w*is\w*\b')
+        
+        print 'Text:', text
+        print
+        
+        pos = 0
+        while True:
+            match = pattern.search(text, pos)
+            if not match:
+                break
+            s = match.start()
+            e = match.end()
+            print '   %2d : %2d = "%s"' % \
+              (s, e-1, text[s:e])
+            # Move forward in text for the next search      
+            pos = e
+        
+        # Output:
+        # <============================================================================
+        # Text: This is some text -- with punctuation.
+        # 
+        #     0 :  3 = "This"
+        #     5 :  6 = "is" 
+        # ============================================================================>
+            
+      #+end_src
 
+      
        
        
       
