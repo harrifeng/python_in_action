@@ -1455,9 +1455,204 @@
         #    'abb'        ('bb',)
         #       'aa'      ('a',)
         # ============================================================================>
-        
       #+end_src
-      
+*** Search Options
+    + 搜索的时候可以选择很多的选项,比如是否大小写敏感.等等. 
+**** Case-Insensitive Matching
+     + 搜索的时候用IGNORECASE变量来设置不敏感
+       #+begin_src python
+         import re
+         
+         text = 'This is some text -- with punctuation.'
+         pattern = r'\bT\w+'
+         with_case = re.compile(pattern)
+         without_case = re.compile(pattern, re.IGNORECASE)
+         
+         print 'Text:\n  %r'  % text
+         print 'Pattern:\n %s' % pattern
+         print 'Case-sensitive:'
+         for match in with_case.findall(text):
+             print '   %r' % match
+         print 'Case-insensitive:'
+         for match in without_case.findall(text):
+             print '   %r' % match
+         
+         # Output:
+         # <============================================================================
+         # Text:
+         #   'This is some text -- with punctuation.'
+         # Pattern:
+         #  \bT\w+
+         # Case-sensitive:
+         #    'This'
+         # Case-insensitive:
+         #    'This'
+         #    'text'
+         # ============================================================================>
+       #+end_src
+     + MULTILINE变量可以设置成把带换行符(\n)的字符串当做是多行字符串,在每行字符串都匹配开头和结尾
+       两个锚定规则(^和$)
+       #+begin_src python
+         import re
+         
+         text = 'This is some text -- with punctuation.\nA second line.'
+         pattern = r'(^\w+)|(\w+\S*$)'
+         single_line = re.compile(pattern)
+         multiline = re.compile(pattern, re.MULTILINE)
+         
+         print 'Text:\n   %r' % text
+         print 'Pattern: \n %s' % pattern
+         print 'Single Line :'
+         for match in single_line.findall(text):
+             print '   %r' % (match,)
+         print 'Multiline   :'
+         for match in multiline.findall(text):
+             print '   %r' % (match,)
+         
+         # Output:
+         # <============================================================================
+         # Text:
+         #    'This is some text -- with punctuation.\nA second line.'
+         # Pattern: 
+         #  (^\w+)|(\w+\S*$)
+         # Single Line :
+         #    ('This', '')
+         #    ('', 'line.')
+         # Multiline   :
+         #    ('This', '')
+         #    ('', 'punctuation.')
+         #    ('A', '')
+         #    ('', 'line.')
+         # ============================================================================>
+       #+end_src
+     + 一般情况下,dot character(.)是可以匹配除了换行符以外的任意的字符, 而加了DOTALL以后, dot 
+       character就同时可以匹配换行符了.
+       #+begin_src python
+         import re
+         
+         text = 'This is some text -- with punctuation.\nA second line.'
+         pattern = r'.+'
+         no_newlines = re.compile(pattern)
+         dotall = re.compile(pattern, re.DOTALL)
+         
+         print 'Text:\n %r' % text
+         print 'Pattern:\n %s' % pattern
+         print 'No newlines :'
+         for match in no_newlines.findall(text):
+             print '   %r' % match
+         print 'Dotall      :'
+         for match in dotall.findall(text):
+             print '   %r' % match
+         
+         # Output:
+         # <============================================================================
+         # Text:
+         #  'This is some text -- with punctuation.\nA second line.'
+         # Pattern:
+         #  .+
+         # No newlines :
+         #    'This is some text -- with punctuation.'
+         #    'A second line.'
+         # Dotall      :
+         #    'This is some text -- with punctuation.\nA second line.' 
+         # ============================================================================>
+       #+end_src
+**** Unicode
+     + 对于python 2来说, 所有的字符串都默认是ASCII,所以\w+能够匹配"French", 但是却无法匹配法语
+       'Français', 所以我们需要UNICODE flag.
+     + python 3默认都使用unicode,所以这个flag在python3中是没有用了
+       #+begin_src python
+         # -*- coding:utf-8 -*-
+         import re
+         import codecs
+         import sys
+         
+         # Set standard output encoding to UTF-8
+         sys.stdout = codecs.getwriter('UTF-8')(sys.stdout)
+         
+         text = u'Français zloty Österreich'
+         pattern = ur'\w+'
+         ascii_pattern = re.compile(pattern)
+         unicode_pattern = re.compile(pattern, re.UNICODE)
+         
+         print 'Text    :', text
+         print 'Pattern :', pattern
+         print 'ASCII   :', u', '.join(ascii_pattern.findall(text))
+         print 'Unicode :', u', '.join(unicode_pattern.findall(text))
+         
+         # Output:
+         # <============================================================================
+         # Text    : Français zloty Österreich
+         # Pattern : \w+
+         # ASCII   : Fran, ais, zloty, sterreich
+         # Unicode : Français zloty Österreich
+         # ============================================================================>
+       #+end_src
+**** Verbose Expression Syntax
+     + 下面是一个检测邮箱地址是否合法的程序,我们发现这个正则表达式实在是太长了,也不好理解
+       #+begin_src python 
+         import re
+         
+         address = re.compile('[\w\d.+-]+@([\w\d.]+\.)+(com|org|edu)',
+                              re.UNICODE)
+         
+         candidates = [
+             u'first.last@example.com',
+             u'first.last+category@gmail.com',
+             u'valid-address@mail.example.com',
+             u'not-valid@example.foo',
+             ]
+         
+         for candidate in candidates:
+             match = address.search(candidate)
+             print '%-30s %s' % (candidate, 'Matches' if match else 'NO match')
+         
+         # Output:
+         # <============================================================================
+         # first.last@example.com         Matches
+         # first.last+category@gmail.com  Matches
+         # valid-address@mail.example.com Matches
+         # not-valid@example.foo          NO match 
+         # ============================================================================>
+       #+end_src
+     + 所以我们要用到另外一个flag VERBOSE,能够把表达式描写的更易于阅读一点
+       #+begin_src python
+         import re
+         
+         address = re.compile(
+             '''
+             [\w\d.+-]+         # username
+             @  
+             ([\w\d.]+\.)+      # domain name prefix
+             (com|org|edu)      # TODO: suppor tomore top-level domains
+             ''',
+             re.UNICODE | re.VERBOSE)
+         
+         candidates = [
+             u'first.last@example.com',
+             u'first.last+category@gmail.com',
+             u'valid-address@mail.example.com',
+             u'not-valid@example.foo',
+             ]
+         
+         for candidate in candidates:
+             match = address.search(candidate)
+             print '%-30s %s' % (candidate, 'Matches' if match else 'NO match')
+         
+         # Output:
+         # <============================================================================
+         # first.last@example.com         Matches
+         # first.last+category@gmail.com  Matches
+         # valid-address@mail.example.com Matches
+         # not-valid@example.foo          NO match 
+         # ============================================================================>
+       #+end_src
+
+
+
+
+
+
 
 
 
