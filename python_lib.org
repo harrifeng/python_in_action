@@ -1647,6 +1647,124 @@
          # not-valid@example.foo          NO match 
          # ============================================================================>
        #+end_src
+     + 下面的例子是分析更复杂的email地址,比如 First Last <first.last@example.com>这种,先写上
+       自己的姓名,然后用<>包括上email地址
+       #+begin_src python
+         import re
+         
+         address = re.compile(
+             '''
+             # A name is made up of letters, and my include "."
+             # for title abbreviations and middle initials.
+             ((?P<name>
+                ([\w.,]+\s+)*[\w.,]+)
+                \s*
+                # Email addresses are wrapped in angle
+                # brackets: < > but only if a name is 
+                # found, so keep the start bracket in this
+                # group
+                <
+              )? # the entire name is optional
+         
+              # The address itself: username@domain.tld
+              (?P<email>
+                [\w\d.+-]+        #username
+                @
+                ([\w\d.]+\.)+     #domain name prefix
+                (com|org|edu)     #limit the allowed top-level domains
+              )
+         
+              >?  # optional closing angle bracket
+              ''',
+              re.UNICODE | re.VERBOSE)
+         
+         candidates = [
+             u'first.last@example.com',
+             u'first.last+category@gmail.com',
+             u'valid-address@mail.example.com',
+             u'not-valid@example.foo',
+             u'First Last <first.last@example.com>',
+             u'No Brackets first.last@example.com',
+             u'Fisrt Last',
+             u'Fisrt Middle Last <first.last@example.com>',
+             u'First M. Last <first.last@example.com>',
+             u'<first.last@example.com>',
+             ]
+         
+         for candidate in candidates:
+             print 'Candidate:', candidate
+             match = address.search(candidate)
+             if match:
+                 print ' Name  :', match.groupdict()['name']
+                 print ' Email :', match.groupdict()['email']
+             else:
+                 print ' No match'
+         
+         # Output:
+         # <============================================================================
+         # Candidate: first.last@example.com
+         #  Name  : None
+         #  Email : first.last@example.com
+         # Candidate: first.last+category@gmail.com
+         #  Name  : None
+         #  Email : first.last+category@gmail.com
+         # Candidate: valid-address@mail.example.com
+         #  Name  : None
+         #  Email : valid-address@mail.example.com
+         # Candidate: not-valid@example.foo
+         #  No match
+         # Candidate: First Last <first.last@example.com>
+         #  Name  : First Last
+         #  Email : first.last@example.com
+         # Candidate: No Brackets first.last@example.com
+         #  Name  : None
+         #  Email : first.last@example.com
+         # Candidate: Fisrt Last
+         #  No match
+         # Candidate: Fisrt Middle Last <first.last@example.com>
+         #  Name  : Fisrt Middle Last
+         #  Email : first.last@example.com
+         # Candidate: First M. Last <first.last@example.com>
+         #  Name  : First M. Last
+         #  Email : first.last@example.com
+         # Candidate: <first.last@example.com>
+         #  Name  : None
+         #  Email : first.last@example.com
+         # ============================================================================>
+       #+end_src
+**** Embedding Flags in Patterns
+     + 如果某些情况下,不允许在re函数里面添加第二个参数flag,可以把参数加在patter里面,比如下面的
+       r'(?i)\bT\w+'
+       #+begin_src python
+         import re
+         
+         text = 'This is some text -- with punctuation.'
+         pattern = r'(?i)\bT\w+'
+         regex = re.compile(pattern)
+         
+         print 'Text    :', text
+         print 'Pattern :', pattern
+         print 'Matches :', regex.findall(text)
+         
+         # Output:
+         # <============================================================================
+         # Text    : This is some text -- with punctuation.
+         # Pattern : (?i)\bT\w+
+         # Matches : ['This', 'text']
+         # ============================================================================>
+       #+end_src
+     + 所有search option的小写字母版总结如下
+       | Flag       | Abbreviation |
+       |------------+--------------|
+       | IGNORECASE | i            |
+       | MULTILINE  | m            |
+       | DOTALL     | s            |
+       | UNICODE    | u            |
+       | VERBOSE    | x            | 
+  
+
+       
+
 
 
 
