@@ -1761,9 +1761,197 @@
        | DOTALL     | s            |
        | UNICODE    | u            |
        | VERBOSE    | x            | 
-  
+*** Looking Ahead or Behind
+    + 原来的对于<adimin@example.com>的做法是把"<"放到一个group里面,然后标记成optional(用?), 
+      但是其实这个括号并不是可有可无,而是必须成对出现!这个时候positive look-ahead(肯定前向)
+      就用作用了,在python的做法就是(?=pattern)
+      #+begin_src python
+        import re
+        
+        address = re.compile(
+            '''
+            ((?P<name>
+               ([\w.,]+\s+)*[\w.,]+
+             )
+             \s+
+            ) #name is no longer optional
+        
+            # LOOKAHEAD
+            # Email addresses are wrapped in angle brackets, but only
+            # if they are both present or neither is.
+            (?= (<.*>$)
+                |
+                ([^<].*[^>]$)
+                )
+        
+             <? #optional opening angle bracket
+        
+             (?P<email>
+                [\w\d.+-]+
+                @
+                ([\w\d.]+\.)+
+                (com|org|edu)
+             )
+        
+             >?  #optional closing angle bracket
+             ''',
+             re.UNICODE | re.VERBOSE)
+        
+        candidates = [
+            u'First Last <first.last@example.com>',
+            u'No Brackets first.last@example.com',
+            u'Open Bracket <first.last@example.com',
+            u'Close Bracket firs.last@example.com>',
+            ]
+        
+        for candidate in candidates:
+            print 'Candidate:', candidate
+            match = address.search(candidate)
+            if match:
+                print '   Name :', match.groupdict()['name']
+                print '   Email:', match.groupdict()['email']
+            else:
+                print '   No match'
+        
+        # Output:
+        # <============================================================================
+        # Candidate: First Last <first.last@example.com>
+        #    Name : First Last
+        #    Email: first.last@example.com
+        # Candidate: No Brackets first.last@example.com
+        #    Name : No Brackets
+        #    Email: first.last@example.com
+        # Candidate: Open Bracket <first.last@example.com
+        #    No match
+        # Candidate: Close Bracket firs.last@example.com>
+        #    No match 
+        # ============================================================================>
+      #+end_src
+    + 还可以用negative look-ahead(否定前向)来忽略某些匹配,比如常见的noreply, 使用(?!pattern)
+      #+begin_src python
+        import re
+        
+        address = re.compile(
+            '''
+            ^
+            #Ignore noreply address
+            (?!noreply@.*$)
+        
+            [\w\d.+-]+      #username
+            @
+            ([\w\d.]+\.)    #limit the allowed top-level domains
+        
+            $
+            ''',
+            re.UNICODE | re.VERBOSE)
+        
+        
+        candidates = [
+            u'first.last@example.com',
+            u'noreply@example.com',
+            ]
+        
+        for candidate in candidates:
+            print 'Candidate:', candidate
+            match = address.search(candidate)
+            if match:
+                print 'MATCHES:', candidate[match.start():match.end()]
+            else:
+                print 'No Match:'
+        
+        # Output:
+        # <============================================================================
+        # Candidate: first.last@example.com
+        # No Match:
+        # Candidate: noreply@example.com
+        # No Match:
+        # ============================================================================>
+      #+end_src
+    + 除了前两种方法还有两种,一个是negative look-behind(否定后向), 还有一种是positive 
+      look-behind(肯定后向), 好绕口...先看否定后向(?<!pattern)
+      #+begin_src python
+        import re
+        
+        address = re.compile(
+            '''
+            ^
+            [\w\d.+-]+         # username
+        
+            #Ignore noreply address
+            (?<!noreply)
+        
+            @
+            ([\w\d.]+\.)+      # domain name prefix
+            (com|org|edu)     #limit the allowed top-level domains
+        
+            $
+            ''',
+            re.UNICODE | re.VERBOSE)
+        
+        candidates = [
+            u'first.last@example.com',
+            u'noreply@example.com',
+            ]
+        
+        for candidate in candidates:
+            print 'Candidate:', candidate
+            match = address.search(candidate)
+            if match:
+                print '   Match:', candidate[match.start():match.end()]
+            else:
+                print '   No match'
+        
+        # Output:
+        # <============================================================================
+        # Candidate: first.last@example.com
+        #    Match: first.last@example.com
+        # Candidate: noreply@example.com
+        #    No match
+        # ============================================================================>
+      #+end_src
+    + 最后就剩下positive look-behind(肯定后向)了,它可以用来寻找比如pattern后面是一个正则表达式
+      的情况,比如 patternABCD 就可以 (?<=pattern)来设置他们的前缀.
+      #+begin_src python
+        import re
+        
+        twitter = re.compile(
+            '''
+            # A twitter handle: @username
+            (?<=@)
+            ([\w\d_]+)
+            ''',
+            re.UNICODE | re.VERBOSE)
+        
+        text = ''' This text includes two Twitter handles.
+        One for @ThePSF, and one for the author, @doughellmann.
+        '''
+        
+        print text
+        for match in twitter.findall(text):
+            print 'Handle:', match
+        
+        # Output:
+        # <============================================================================
+        # This text includes two Twitter handles.
+        # One for @ThePSF, and one for the author, @doughellmann.
+        # 
+        # Handle: ThePSF
+        # Handle: doughellmann
+        # ===========================================================================>
+*** Self-Referencing Expressions
+    
+            
+            
+        
+      #+end_src
+
+
+
+
+    
 
        
+
 
 
 
