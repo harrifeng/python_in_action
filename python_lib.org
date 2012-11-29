@@ -1939,11 +1939,209 @@
         # Handle: doughellmann
         # ===========================================================================>
 *** Self-Referencing Expressions
-    
-            
+    + 我们可以用"\数字"的方法来创建反向引用,但是缺点明显:只能创建99个引用, 表达式改变也要随着改变
+      #+begin_src python
+        import re
+        
+        address = re.compile(
+            r'''
+            (\w+)              #first name
+            \s+
+            (([\w.]+)\s+)?     #optional middle name or initial
+            (\w+)              #last name
+        
+            \s+ 
+        
+            <
+        
+            #The address: first_name.last_name@domain.tld
+            (?P<email>
+            \1               #first name
+            \. 
+            \4               #last name
+            @
+            ([\w\d.]+\.)+    #domain name prefix
+            (com|org|edu)    #limit the allowed top-level domains
+            )
+        
+            >
+            ''',
+            re.UNICODE | re.VERBOSE | re.IGNORECASE)
+        
+        candidates = [
+            u'First Last <first.last@example.com>',
+            u'Different Name <first.last@example.com>',
+            u'First Middle Last <first.last@example.com>',
+            u'Fisrt M. Last <first.last@example.com>',
+            ]
+        
+        for candidate in candidates:
+            print 'Candidate:', candidate
+            match = address.search(candidate)
+            if match:
+                print '   Match name  :', match.group(1), match.group(4)
+                print '   Match email :', match.group(5)
+            else:
+                print '   No match'
+        
+        # Output:
+        # <============================================================================
+        # Candidate: First Last <first.last@example.com>
+        #    Match name  : First Last
+        #    Match email : first.last@example.com
+        # Candidate: Different Name <first.last@example.com>
+        #    No match
+        # Candidate: First Middle Last <first.last@example.com>
+        #    Match name  : First Last
+        #    Match email : first.last@example.com
+        # Candidate: Fisrt M. Last <first.last@example.com>
+        #    No match
+        # ============================================================================>
+      #+end_src
+    + 还有个叫做(?P=name)的方法来指代先前匹配的一个值.
+      #+begin_src python
+        import re
+        
+        address = re.compile(
+            '''
+            #The regular name
+            (?P<first_name>\w+)
+            \s+
+            (([\w.]+)\s+)?  
+            (?P<last_name>\w+)
+        
+            \s+
+        
+            <
+        
+            (?P<email>
+              (?P=first_name)
+              \.
+              (?P=last_name)
+              @
+              ([\w\d.]+\.)+   #domain name prefix
+              (com|org|edu)   #limit the allowed top-level domains
+            )
+        
+            >
+            ''',
+            re.UNICODE | re.VERBOSE | re.IGNORECASE)
+        
+        candidates = [
+            u'First Last <first.last@example.com>',
+            u'Different Name <first.last@example.com>',
+            u'First Middle Last <first.last@example.com>',
+            u'First M. Last <first.last@example.com>',
+            ]
+        
+        for candidate in candidates:
+            print 'Candidate:', candidate
+            match = address.search(candidate)
+            if match:
+                print ' Match name  :', match.groupdict()['first_name'],
+                print match.groupdict()['last_name']
+                print ' Match email :', match.groupdict()['email']
+            else:
+                print ' No match'
+        
+        # Output:
+        # <============================================================================
+        # Candidate: First Last <first.last@example.com>
+        #  Match name  : First Last
+        #  Match email : first.last@example.com
+        # Candidate: Different Name <first.last@example.com>
+        #  No match
+        # Candidate: First Middle Last <first.last@example.com>
+        #  Match name  : First Last
+        #  Match email : first.last@example.com
+        # Candidate: First M. Last <first.last@example.com>
+        #  Match name  : First Last
+        #  Match email : first.last@example.com 
+        # ============================================================================>
+      #+end_src
+    + 
+      #+begin_src python
+        import re
+        
+        address = re.compile(
+            '''
+            ^
+        
+            # A name is made up of letters, and may include "."
+            # for title abbreviations and middle initials.
+            (?P<name>
+                ([\w.]+\s+)*[\w.]+
+              )?
+            \s*
+        
+            # Email addresses are wrapped in angel brackets, but
+            # only if a name is found.
+            (?(name)
+              # remainder wrapped in angel brackets because
+              # there is a name
+              (?P<brackets>(?=(<.*>$)))
+              |
+              # remainder does not inculude angel brackets without name
+              (?=([^<].*[^>]$))
+            )
+        
+            # Only look for a bracket if the look-ahead assertion
+            # found both of them.
+            (?(brackets)<|\s*)
+        
+            # The address itself: usrname@domain.tld
+            (?P<email>
+               [\w\d.+-]+        
+               @
+               ([\w\d.]+\.)+
+               (com|org|edu)
+            )
+        
+            # Only look for a bracket if the look-ahead assertion
+            # found both of them.
+            (?(brackets)>|\s*)
+        
+             $
+             ''',
+             re.UNICODE | re.VERBOSE)
+        
+        candidates = [
+            u'First Last <first.last@example.com>',
+            u'No Brackets first.last@example.com',
+            u'Open Bracket <first.last@example.com',
+            u'Close Bracket firs.last@example.com>',
+            u'no.brackets@example.com',
+            ]
+        
+        for candidate in candidates:
+            print 'Candidate:', candidate
+            match = address.search(candidate)
+            if match:
+                print '   Match name  :', match.groupdict()['name']
+                print '   Match email :', match.groupdict()['email']
+            else:
+                print '   No match'
+        
+        # Output:
+        # <============================================================================
+        # Candidate: First Last <first.last@example.com>
+        #    Match name  : First Last
+        #    Match email : first.last@example.com
+        # Candidate: No Brackets first.last@example.com
+        #    No match
+        # Candidate: Open Bracket <first.last@example.com
+        #    No match
+        # Candidate: Close Bracket firs.last@example.com>
+        #    No match
+        # Candidate: no.brackets@example.com
+        #    Match name  : None
+        #    Match email : no.brackets@example.com 
+        # ============================================================================>
+      #+end_src
+*** Modifying Strings with Patterns
+
             
         
-      #+end_src
 
 
 
