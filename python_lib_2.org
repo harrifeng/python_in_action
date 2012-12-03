@@ -1,0 +1,2 @@
+#+OPTIONS: ^:{}
+* Chapter 2:Data Structures
