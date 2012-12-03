@@ -2187,37 +2187,114 @@
         # Bold: Make this <b>bold</b>. This **too**.
         # ==================================================================>
       #+end_src
-
-
-
-
-            
+    + subn和sub是一样的,只不过subn返回一个tuple, tuple的第二个参数是被替换的个数
+      #+begin_src python
+        import re
         
+        bold =re.compile(r'\*{2}(.*?)\*{2}', re.UNICODE)
+        
+        text = 'Make this **bold**. This **too**.'
+        
+        print 'Text:', text
+        print 'Bold:', bold.subn(r'<b>\1</b>', text)
+      #+end_src
+*** Splitting with Patterns
+    + str.split()是常用的把字符串分割的函数,但是它缺点却十分明显,比如它只能使用
+      字符作为分割界限. 如果我们想通过其他"更抽象"的方式来分割的话,比如我们想把
+      "句子后面有两个或两个以上空行"的句子找出来.那就可以用下面的方法,借助
+      findall()来实现
+      #+begin_src python
+        import re
+        
+        text = '''Paragraph one
+        on two lines.
+        
+        Paragraph two.
+        
+        
+        Paragraph three.'''
+        
+        for num, para in enumerate(re.findall(r'(.+?)\n{2,}',
+                                              text,
+                                              flags=re.DOTALL)
+                                              ):
+            print num, repr(para)
+            print
+        
+        # Output:
+        # <==================================================================
+        # 0 'Paragraph one\non two lines.'
+        # 
+        # 1 'Paragraph two.' 
+        # ==================================================================>
+            
+      #+end_src
+    + 上面的例子Paragraph three没有输出,如果我们想把它也加入进来,那么依然用findall
+      的话,逻辑就是在"或|"上一个group,不仅仅是后面有两个以上的"\n"的pattern符合,而
+      且, 后面跟着结束符"$"的,也符合. 我们这个例子,其实用re.split()更加的贴切, 
+      pattern也更加简单:我们以"pattern=两个或多个换行"为界限,把文本分开成多份.
+      #+begin_src python
+        import re
+        
+        text = '''Paragraph one
+        on two lines.
+        
+        
+        Paragraph two.
+        
+        
+        Paragraph three.'''
+        
+        print 'With findall:'
+        for num, para in enumerate(re.findall(r'(.+?)(\n{2,}|$)',
+                                              text,
+                                              flags=re.DOTALL)
+                                              ):
+            print num, repr(para)
+            print
+        
+        print
+        
+        print 'With split:'
+        for num, para in enumerate(re.split(r'\n{2,}', text)):
+            print num, repr(para)
+            print
+        
+        # Output:
+        # <==================================================================
+        # With findall:
+        # 0 ('Paragraph one\non two lines.', '\n\n\n')
+        # 
+        # 1 ('Paragraph two.', '\n\n\n')
+        # 
+        # 2 ('Paragraph three.', '')
+        # 
+        # 
+        # With split:
+        # 0 'Paragraph one\non two lines.'
+        # 
+        # 1 'Paragraph two.'
+        # 
+        # 2 'Paragraph three.' 
+        # ==================================================================>
+      #+end_src
+    + 和上面的With split例子完全一样,只是在我们的pattern外面加一个括号(), 就能
+      使得最后的结果打印出分隔符和其他部分
+      #+begin_src python
+        import re
+        
+        text = '''Paragraph one
+        on two lines.
+        
+        Paragraph two.
+        
+        
+        Paragraph three.'''
+        
+        print 'With split:'
+        for num, para in enumerate(re.split(r'(\n{2,})', text)):
+            print num, repr(para)
+            print
+      #+end_src
 
 
-
-
-    
-
-       
-
-
-
-
-
-
-
-
-
-
-
-
-      
-       
-       
-      
-       
-      
-      
-      
-       
