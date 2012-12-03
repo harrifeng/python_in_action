@@ -2296,5 +2296,245 @@
             print num, repr(para)
             print
       #+end_src
-
-
+** difflib--Compare Sequence
+*** Comparing Bodies of Text
+    + Differ class是用来产生类似unix diff结果的类:
+      - 如果一行前面有"-"说明第一个sequence里面有这行,而第二个sequence里面没有
+      - 如果一行前面有"+"说明第二个sequence里面有这行,而第一个sequence里面没有
+      - 如果一行两个版本间有不同,会显示一个"?", 然后会在有差别的地方标记+或者-,
+	这一点是和diff不太一样的地方
+      - 如果两个sequence之间没有不同,那么就在前面加个空格,以便和前面三种情况对齐
+    + 在将文本传入compare()之前, 先分解成两个独立的sequence
+      #+begin_src python
+        import difflib
+        
+        text1 = """Lorem ipsum dolor sit amet, consectetuer adipiscing
+        elit. Integer eu lacus accumsan arcu fermentum euismod. Donec
+        pulvinar porttitor tellus. Aliquam venenatis. Donec facilisis
+        pharetra tortor.
+        In nec mauris eget magna consequat
+        convallis. Nam sed sem vitae odio pellentesque interdum. Sed
+        consequat viverra nisl. Suspendisse arcu metus, blandit quis,
+        rhoncus ac, pharetra eget, velit. Mauris urna. Morbi nonummy
+        molestie orci. Praesent nisi elit, fringilla ac, suscipit non,
+        tristique vel, mauris. Curabitur vel lorem id nisl porta
+        adipiscing. Suspendisse eu lectus. In nunc. Duis vulputate
+        tristique enim. Donec quis lectus a justo imperdiet tempus."""
+        text1_lines = text1.splitlines()
+        
+        text2 = """Lorem ipsum dolor sit amet, consectetuer adipiscing
+        elit. Integer eu lacus accumsan arcu fermentum euismod. Donec
+        pulvinar, porttitor tellus. Aliquam venenatis. Donec facilisis
+        pharetra tortor. In nec mauris eget magna consequat
+        convallis. Nam cras vitae mi vitae odio pellentesque interdum. Sed
+        consequat viverra nisl. Suspendisse arcu metus, blandit quis,
+        rhoncus ac, pharetra eget, velit. Mauris urna. Morbi nonummy
+        molestie orci. Praesent nisi elit, fringilla ac, suscipit non,
+        tristique vel, mauris. Curabitur vel lorem id nisl porta
+        adipiscing. Duis vulputate tristique enim. Donec quis lectus a
+        justo imperdiet tempus.
+        Suspendisse eu lectus. In nunc."""
+        text2_lines = text2.splitlines()
+        
+        d = difflib.Differ()
+        diff = d.compare(text1_lines, text2_lines)
+        print '\n'.join(diff)
+        
+        # Output:
+        # <==================================================================
+          Lorem ipsum dolor sit amet, consectetuer adipiscing
+          elit. Integer eu lacus accumsan arcu fermentum euismod. Donec
+        - pulvinar porttitor tellus. Aliquam venenatis. Donec facilisis
+        + pulvinar, porttitor tellus. Aliquam venenatis. Donec facilisis
+        ?         +
+        
+        - pharetra tortor.
+        - In nec mauris eget magna consequat
+        + pharetra tortor. In nec mauris eget magna consequat
+        ? +++++++++++++++++
+        
+        - convallis. Nam sed sem vitae odio pellentesque interdum. Sed
+        ?                  - --
+        
+        + convallis. Nam cras vitae mi vitae odio pellentesque interdum. Sed
+        ?                +++ +++++   +
+        
+          consequat viverra nisl. Suspendisse arcu metus, blandit quis,
+          rhoncus ac, pharetra eget, velit. Mauris urna. Morbi nonummy
+          molestie orci. Praesent nisi elit, fringilla ac, suscipit non,
+          tristique vel, mauris. Curabitur vel lorem id nisl porta
+        - adipiscing. Suspendisse eu lectus. In nunc. Duis vulputate
+        - tristique enim. Donec quis lectus a justo imperdiet tempus.
+        + adipiscing. Duis vulputate tristique enim. Donec quis lectus a
+        + justo imperdiet tempus.
+        + Suspendisse eu lectus. In nunc.
+        # ==================================================================>
+      #+end_src
+    + Differ class会把所有的输入都输出出来, 而unified diff则只输出变化行的上下文
+      文本--git中就是这样, 下例中的lineterm参数告诉了unified_diff去除换行符
+      #+begin_src python
+        import difflib
+        
+        text1 = """Lorem ipsum dolor sit amet, consectetuer adipiscing
+        elit. Integer eu lacus accumsan arcu fermentum euismod. Donec
+        pulvinar porttitor tellus. Aliquam venenatis. Donec facilisis
+        pharetra tortor.
+        In nec mauris eget magna consequat
+        convallis. Nam sed sem vitae odio pellentesque interdum. Sed
+        consequat viverra nisl. Suspendisse arcu metus, blandit quis,
+        rhoncus ac, pharetra eget, velit. Mauris urna. Morbi nonummy
+        molestie orci. Praesent nisi elit, fringilla ac, suscipit non,
+        tristique vel, mauris. Curabitur vel lorem id nisl porta
+        adipiscing. Suspendisse eu lectus. In nunc. Duis vulputate
+        tristique enim. Donec quis lectus a justo imperdiet tempus."""
+        text1_lines = text1.splitlines()
+        
+        text2 = """Lorem ipsum dolor sit amet, consectetuer adipiscing
+        elit. Integer eu lacus accumsan arcu fermentum euismod. Donec
+        pulvinar, porttitor tellus. Aliquam venenatis. Donec facilisis
+        pharetra tortor. In nec mauris eget magna consequat
+        convallis. Nam cras vitae mi vitae odio pellentesque interdum. Sed
+        consequat viverra nisl. Suspendisse arcu metus, blandit quis,
+        rhoncus ac, pharetra eget, velit. Mauris urna. Morbi nonummy
+        molestie orci. Praesent nisi elit, fringilla ac, suscipit non,
+        tristique vel, mauris. Curabitur vel lorem id nisl porta
+        adipiscing. Duis vulputate tristique enim. Donec quis lectus a
+        justo imperdiet tempus.
+        Suspendisse eu lectus. In nunc."""
+        text2_lines = text2.splitlines()
+        
+        diff = difflib.unified_diff(text1_lines, 
+                                    text2_lines,
+                                    lineterm='',
+                                    )
+        
+        
+        print '\n'.join(list(diff))
+        
+        # Output:
+        # <==================================================================
+        #  Lorem ipsum dolor sit amet, consectetuer adipiscing
+        #  elit. Integer eu lacus accumsan arcu fermentum euismod. Donec
+        # -pulvinar porttitor tellus. Aliquam venenatis. Donec facilisis
+        # -pharetra tortor.
+        # -In nec mauris eget magna consequat
+        # -convallis. Nam sed sem vitae odio pellentesque interdum. Sed
+        # +pulvinar, porttitor tellus. Aliquam venenatis. Donec facilisis
+        # +pharetra tortor. In nec mauris eget magna consequat
+        # +convallis. Nam cras vitae mi vitae odio pellentesque interdum. Sed
+        #  consequat viverra nisl. Suspendisse arcu metus, blandit quis,
+        #  rhoncus ac, pharetra eget, velit. Mauris urna. Morbi nonummy
+        #  molestie orci. Praesent nisi elit, fringilla ac, suscipit non,
+        #  tristique vel, mauris. Curabitur vel lorem id nisl porta
+        # -adipiscing. Suspendisse eu lectus. In nunc. Duis vulputate
+        # -tristique enim. Donec quis lectus a justo imperdiet tempus.
+        # +adipiscing. Duis vulputate tristique enim. Donec quis lectus a
+        # +justo imperdiet tempus.
+        # +Suspendisse eu lectus. In nunc.
+        # ==================================================================>
+      #+end_src
+*** Junk Data
+    + 所有生成差异的函数都可以导入一些参数,来决定哪些行应该被忽略,比如下面的例子
+      就是space被忽略与否的例子.默认情况下Differ不会忽略神马的,但是nodiff就会
+      忽略空格和tab
+      #+begin_src python
+        from difflib import SequenceMatcher
+        
+        def show_results(s):
+            i, j, k = s.find_longest_match(0, 5, 0, 9)
+            print '  i = %d' %i
+            print '  j = %d' %j
+            print '  k = %d' %k
+            print 'A[i:i+k] = %r' % A[i:i+k]
+            print 'B[j:j+k] = %r' % B[j:j+k]
+            
+        A = " abcd"
+        B = "abcd abcd"
+        
+        print 'A = %r' % A
+        print 'B = %r' % B
+        
+        print '\nWithout junk detection:'
+        show_results(SequenceMatcher(None, A, B))
+        
+        
+        print '\nTreat sapeces as junk:'
+        show_results(SequenceMatcher(lambda x: x==" ", A, B))
+        
+        # Output:
+        # <==================================================================
+        # A = ' abcd'
+        # B = 'abcd abcd'
+        #
+        # Without junk detection:
+        #   i = 0
+        #   j = 4
+        #   k = 5
+        # A[i:i+k] = ' abcd'
+        # B[j:j+k] = ' abcd'
+        # 
+        # Treat sapeces as junk:
+        #   i = 1
+        #   j = 0
+        #   k = 4
+        # A[i:i+k] = 'abcd'
+        # B[j:j+k] = 'abcd'
+        # ==================================================================>
+      #+end_src
+*** Comparing Arbitray Types
+    + SequenceMatcher可以比较任意类型的两个序列,只要他们都是可以散列的.下面的例子中
+      get_opcodes()是获取如何从字符串A变成字符串B的一系列操作
+      #+begin_src python
+        import difflib
+        
+        s1 = [1, 2, 3, 5, 6, 4]
+        s2 = [2, 3, 5, 4, 6, 1]
+        
+        print 'Initial data:'
+        print 's1 =', s1
+        print 's2 =', s2
+        print 's1 == s2:', s1==s2
+        print
+        
+        matcher = difflib.SequenceMatcher(None, s1, s2)
+        for tag, i1, i2, j1, j2 in reversed(matcher.get_opcodes()):
+            if tag == 'delete':
+                print 'Remove %s from positions [%d:%d]' % \
+                  (s1[i1:i2], i1, i2)
+                del s1[i1:i2]
+            elif tag == 'equal':
+                print 's1[%s:%d] and s2[%d:%d] are the same' % \
+                  (i1, i2, j1, j2)
+            elif tag == 'insert':
+                print 'Insert %s from s2[%d:%d] into s1 at %d' % \
+                  (s2[j1:j2], j1, j2, i1)
+                s1[i1:i2] = s2[j1:j2]
+            elif tag == 'replace':
+                print 'Replace %s from s1[%d:%d] with %s from s2[%d:%d]' % (
+                    s1[i1:i2], i1, i2, s2[j1:j2], j1, j2)
+                s1[i1:i2] = s2[j1:j2]
+        
+            print '  s1 =', s1
+        
+        print 's1 == s2:', s1==s2    
+        
+        # Output:
+        # <==================================================================
+        # Initial data:
+        # s1 = [1, 2, 3, 5, 6, 4]
+        # s2 = [2, 3, 5, 4, 6, 1]
+        # s1 == s2: False
+        # 
+        # Replace [4] from s1[5:6] with [1] from s2[5:6]
+        #   s1 = [1, 2, 3, 5, 6, 1]
+        # s1[4:5] and s2[4:5] are the same
+        #   s1 = [1, 2, 3, 5, 6, 1]
+        # Insert [4] from s2[3:4] into s1 at 4
+        #   s1 = [1, 2, 3, 5, 4, 6, 1]
+        # s1[1:4] and s2[0:3] are the same
+        #   s1 = [1, 2, 3, 5, 4, 6, 1]
+        # Remove [1] from positions [0:1]
+        #   s1 = [2, 3, 5, 4, 6, 1]
+        # s1 == s2: True
+        # ==================================================================>
+      #+end_src
