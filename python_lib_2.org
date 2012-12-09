@@ -3,19 +3,495 @@
 ** collections--Container Data Types
    + collections
 *** Counter
-    + 所谓counter就是计数器,用来
+**** Initialize
+     + 所谓counter就是计数器,用来计数的.其初始化的方法有三种,如下,用[1]list,用
+       [2]dict,或者[3]直接用函数参数列表的形式
+       #+begin_src python
+         import collections
+         
+         print collections.Counter(['a', 'b', 'c', 'a', 'b', 'b'])
+         print collections.Counter({'a':2, 'b':3, 'c':1})
+         print collections.Counter(a=2, b=3, c=1)
+         
+         # Output:
+         # <==================================================================
+         # Counter({'b': 3, 'a': 2, 'c': 1})
+         # Counter({'b': 3, 'a': 2, 'c': 1})
+         # Counter({'b': 3, 'a': 2, 'c': 1})
+         # ==================================================================>
+       #+end_src
+     + 也可以从空的开始初始化,然后update()来更新
+       #+begin_src python
+         import collections
+         
+         c = collections.Counter()
+         print 'Initial :', c
+         
+         c.update('abcdaab')
+         print 'Sequence:', c
+         
+         c.update({'a':1, 'd':5})
+         print 'Dict    :', c
+         
+         # Output:
+         # <==================================================================
+         # Initial : Counter()
+         # Sequence: Counter({'a': 3, 'b': 2, 'c': 1, 'd': 1})
+         # Dict    : Counter({'d': 6, 'a': 4, 'b': 2, 'c': 1})
+         # ==================================================================>
+       #+end_src
+**** Accessing Counts
+     + 从上面的例子我们可以看出,其实Counter的结果呢,就是一个dict啦,既然是dict,那么
+       就可以利用key-value的方式c[key]来取得value,也就是出现的次数啦,而且不会出现
+       KeyError哦.
+       #+begin_src python
+         import collections
+         
+         c = collections.Counter('abcdaab')
+         
+         for letter in 'abcde':
+             print '%s : %d' % (letter, c[letter])
+         
+         # Output:
+         # <==================================================================
+         # a : 3
+         # b : 2
+         # c : 1
+         # d : 1
+         # e : 0
+         # ==================================================================>
+       #+end_src
+     + 函数elements()会返回一系列的成员,但是不保证次序,而且出现0次的不会表示
+       #+begin_src python
+         import collections
+         
+         c = collections.Counter('extremely')
+         c['z'] = 0
+         print c
+         print list(c.elements())
+         
+         # Output:
+         # <==================================================================
+         # Counter({'e': 3, 'm': 1, 'l': 1, 'r': 1, 't': 1, 'y': 1, 'x': 1, 'z': 0})
+         # ['e', 'e', 'e', 'm', 'l', 'r', 't', 'y', 'x']
+         # ==================================================================>
+       #+end_src
+     + 函数most_common(), 可以找出出现频率最高的成员,以下面为例,空格出现的最多了
+       #+begin_src python
+         import collections
+         
+         c = collections.Counter()
+         with open('d:/kp/DevTools/Tmp/test.txt', 'rt') as f:
+             for line in f:
+                 c.update(line.rstrip().lower())
+         
+         print 'Most common:'
+         for letter, count in c.most_common(3):
+             print '%s: %7d' % (letter, count)
+         
+         # Output:
+         # <==================================================================
+         # Most common:
+         #  :   26620
+         # e:   15291
+         # t:   11221
+         # ==================================================================>
+       #+end_src
+**** Arithmetic
+     + Counter集合的结果还支持相互之间的数学运算
+       #+begin_src python
+         import collections
+         
+         c1 = collections.Counter(['a', 'b', 'c', 'a', 'b', 'b'])
+         c2 = collections.Counter('alphabet')
+         
+         print 'C1:', c1
+         print 'C2:', c2
+         
+         print '\nCombined counts:'
+         print c1+c2
+         
+         print '\nSubtraction:'
+         print c1 - c2
+         
+         print '\nIntersection (taking positive minimums):'
+         print c1 & c2
+         
+         print '\nUnion (taking maximums):'
+         print c1 | c2
+         
+         # Output:
+         # <==================================================================
+         # C1: Counter({'b': 3, 'a': 2, 'c': 1})
+         # C2: Counter({'a': 2, 'b': 1, 'e': 1, 'h': 1, 'l': 1, 'p': 1, 't': 1})
+         
+         # Combined counts:
+         # Counter({'a': 4, 'b': 4, 'c': 1, 'e': 1, 'h': 1, 'l': 1, 'p': 1, 't': 1})
+         
+         # Subtraction:
+         # Counter({'b': 2, 'c': 1})
+         
+         # Intersection (taking positive minimums):
+         # Counter({'a': 2, 'b': 1})
+         
+         # Union (taking maximums):
+         # Counter({'b': 3, 'a': 2, 'c': 1, 'e': 1, 'h': 1, 'l': 1, 'p': 1, 't': 1})
+         # ==================================================================>
+       #+end_src
+*** defaultdict
+    + standard dictionary包括了一个默认的函数叫做setdefault()来取出value,如果value
+      不在的情况下,给予一个默认值. 下面例子中的defaultdict让我们的container在初始化
+      的时候,就有了这种默认值.
       #+begin_src python
         import collections
         
-        print collections.Counter(['a', 'b', 'c', 'a', 'b', 'b'])
-        print collections.Counter({'a':2, 'b':3, 'c':1})
-        print collections.Counter(a=2, b=3, c=1)
+        def default_factory():
+            return 'default value'
+        
+        d = collections.defaultdict(default_factory, foo='bar')
+        print 'd:', d
+        print 'foo =>', d['foo']
+        print 'bar =>', d['bar']
         
         # Output:
         # <==================================================================
-        # Counter({'b': 3, 'a': 2, 'c': 1})
-        # Counter({'b': 3, 'a': 2, 'c': 1})
-        # Counter({'b': 3, 'a': 2, 'c': 1})
+        # d: defaultdict(<function default_factory at 0x0277FC30>, {'foo': 'bar'})
+        # foo => bar
+        # bar => default value
+        # ==================================================================>
+        
+            
+        
+      #+end_src
+*** Deque
+    + 双向队列支持从队列的两边对成员进行添加和去除操作
+      #+begin_src python
+        import collections
+        
+        d = collections.deque('abcdefg')
+        print 'Deque    :', d
+        print 'Length   :', len(d)
+        print 'Left end :', d[0]
+        print 'Right end:', d[-1]
+        
+        d.remove('c')
+        print 'remove(c):', d
+        
+        # Output:
+        # <==================================================================
+        # Deque    : deque(['a', 'b', 'c', 'd', 'e', 'f', 'g'])
+        # Length   : 7
+        # Left end : a
+        # Right end: g
+        # remove(c): deque(['a', 'b', 'd', 'e', 'f', 'g'])
         # ==================================================================>
       #+end_src
+**** Populating
+     + 可以从两个方向来对deque增加成员, extend和append是正向增加, 而extendlef和
+       appendleft是反向增加
+       #+begin_src python
+         import collections
+         
+         # Add to the right
+         d1 = collections.deque()
+         d1.extend('abcdefg')
+         print 'extend     :', d1
+         d1.append('h')
+         print 'append     :', d1
+         
+         # Add to the left 
+         d2 = collections.deque()
+         d2.extendleft(xrange(6))
+         print 'extendleft :', d2
+         d2.appendleft(6)
+         print 'appendleft :', d2
+         
+         # Output:
+         # <==================================================================
+         # extend     : deque(['a', 'b', 'c', 'd', 'e', 'f', 'g'])
+         # append     : deque(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'])
+         # extendleft : deque([5, 4, 3, 2, 1, 0])
+         # appendleft : deque([6, 5, 4, 3, 2, 1, 0])
+         # ==================================================================>
+       #+end_src
+**** Consuming
+     + 当然deque也可以从两个方向上减小, pop从右面开始推出,而popleft是从左边推出,
+       #+begin_src python
+         import collections
+         
+         print 'From the right:'
+         d = collections.deque('abcdefg')
+         while True:
+             try:
+                 print d.pop(),
+             except IndexError:
+                 break
+         print
+         
+         print '\nFrom the left:'
+         d = collections.deque(xrange(6))
+         while True:
+             try:
+                 print d.popleft(),
+             except IndexError:
+                 break
+         print
+         
+         # Output:
+         # <==================================================================
+         # From the right:
+         # g f e d c b a
+         
+         # From the left:
+         # 0 1 2 3 4 5
+         # ==================================================================>
+       #+end_src
+     + 因为deques是thread-safe的,所以从两个方向上同时消耗都是没有问题的
+       #+begin_src python
+         import collections
+         import threading
+         import time
+         
+         candle = collections.deque(xrange(5))
+         
+         def burn(direction, nextSource):
+             while True:
+                 try:
+                     next = nextSource()
+                 except IndexError:
+                     break
+                 else:
+                     print '%8s: %s' % (direction, next)
+                     time.sleep(0.1)
+             print '%8s: done' % direction
+             return
+         
+         left = threading.Thread(target=burn, args=('Left', candle.popleft))
+         right = threading.Thread(target=burn, args=('Right', candle.pop))
+         
+         print 
+         
+         left.start()
+         right.start()
+         
+         left.join()
+         right.join()
+         
+         # Output:
+         # <==================================================================
+         #   Left: 0
+         #  Right: 4
+         #  Right: 3    Left: 1
+         #
+         #  Right: 2    Left: done
+         #
+         #  Right: done
+         # ==================================================================>
+       #+end_src
+**** Rotating
+     + 还可以像bit一样左右来回rotate
+       #+begin_src python
+         import collections
+         
+         d = collections.deque(xrange(10))
+         print 'Normal        :', d
+         
+         d = collections.deque(xrange(10))
+         d.rotate(2)
+         print 'Right rotation:', d
+         
+         d = collections.deque(xrange(10))
+         d.rotate(-2)
+         print 'Left rotation :', d
+         
+         # Output:
+         # <==================================================================
+         # Normal        : deque([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+         # Right rotation: deque([8, 9, 0, 1, 2, 3, 4, 5, 6, 7])
+         # Left rotation : deque([2, 3, 4, 5, 6, 7, 8, 9, 0, 1])
+         # ==================================================================>
+       #+end_src
+*** namedtuple
+    + 标准库中的tuple可以有多种取用方式,对于简单的数据结构,很少喜闻乐见
+      #+begin_src python
+        bob = ('Bob', 30, 'male')
+        print 'Representation:', bob
+        
+        jane = ('Jane', 29, 'femail')
+        print '\nField by index:', jane[0]
+        
+        print '\nFields by index:'
+        for p in [bob, jane]:
+            print '%s is a %d year old %s' % p
+        
+        # Output:
+        # <==================================================================
+        # Representation: ('Bob', 30, 'male')
+        #
+        # Field by index: Jane
+        #
+        # Fields by index:
+        # Bob is a 30 year old male
+        # Jane is a 29 year old femail
+        # ==================================================================>
+      #+end_src
+**** Defining
+     + 另一方面, tuple的数目少了还可以,如果多了,肯定认不清那个item对应哪个value,
+       这个时候,就可以如下定义named tuple
+       #+begin_src python
+         import collections
+         
+         Person = collections.namedtuple('Person', 'name age gender')
+         
+         print 'Type of Person:', type(Person)
+         
+         bob = Person(name='Bob', age=30, gender='male')
+         print '\nRepresentation:', bob
+         
+         jane = Person(name='Jane', age=29, gender='femaile')
+         print '\nField by name:', jane.name
+         
+         print '\nFields by index:'
+         for p in [bob, jane]:
+             print '%s is a %d year old %s' % p
+         
+         # Output:
+         # <==================================================================
+         # Type of Person: <type 'type'>
+         
+         # Representation: Person(name='Bob', age=30, gender='male')
+         
+         # Field by name: Jane
+         
+         # Fields by index:
+         # Bob is a 30 year old male
+         # Jane is a 29 year old femaile
+         # ==================================================================>
+       #+end_src
+**** Invalid Field names
+     + 如果named tuple的名字有和python keyword一样的,或者名字有重复的,那么会报错误
+       #+begin_src python
+         import collections
+         
+         try:
+             collections.namedtuple('Person', 'name class age gender')
+         except ValueError, err:
+             print err
+         
+         try:
+             collections.namedtuple('Person', 'name  age gender age')
+         except ValueError, err:
+             print err
+         
+         # Output:
+         # <==================================================================
+         # Type names and field names cannot be a keyword: 'class'
+         # Encountered duplicate field name: 'age' 
+         # ==================================================================>
+       #+end_src
+     + 如果吧rename参数设成True,会自动重命名,重命名的方式是根据index,class在第一位
+       就重命名成了_1, 而第二个age就重命名成了_3
+       #+begin_src python
+         import collections
+         
+         with_class = collections.namedtuple(
+             'Person', 'name class age gender',
+             rename=True)
+         
+         print with_class._fields
+         
+         two_ages = collections.namedtuple(
+             'Person', 'name age gender age',
+             rename=True)
+         print two_ages._fields
+         
+         # Output:
+         # <==================================================================
+         # ('name', '_1', 'age', 'gender')
+         # ('name', 'age', 'gender', '_3')
+         # ==================================================================>
+       #+end_src
+*** OrderedDict
+    + 所谓order dict就是一种能够集中加入顺序的dictionary, 对传统dict是一种补充
+      #+begin_src python
+        import collections
+        
+        print 'Regular dictionary:'
+        d = {}
+        d['a'] = 'A'
+        d['b'] = 'B'
+        d['c'] = 'C'
+        
+        for k, v in d.items():
+            print k, v
+        
+        print '\nOrderedDict:'
+        d = collections.OrderedDict()
+        d['a'] = 'A'
+        d['b'] = 'B'
+        d['c'] = 'C'
+        
+        for k, v in d.items():
+            print k, v
+        
+        # Output:
+        # <==================================================================
+        # Regular dictionary:
+        # a A
+        # c C
+        # b B
+        
+        # OrderedDict:
+        # a A
+        # b B
+        # c C 
+        # ==================================================================>
+      #+end_src
+**** Equality
+     + 普通dictionary在比较的时候,不用考虑顺序,ordered dictionary就需要了
+       #+begin_src python
+         import collections
+         
+         print 'dict          :', 
+         d1 = {}
+         d1['a'] = 'A'
+         d1['b'] = 'B'
+         d1['c'] = 'C'
+         
+         d2 = {}
+         d2['c'] = 'C'
+         d2['b'] = 'B'
+         d2['a'] = 'A'
+         
+         print d1 == d2
+         
+         print 'OrderedDict   :', 
+         d1 = collections.OrderedDict()
+         d1['a'] = 'A'
+         d1['b'] = 'B'
+         d1['c'] = 'C'
+         
+         d2 = collections.OrderedDict()
+         d2['c'] = 'C'
+         d2['b'] = 'B'
+         d2['a'] = 'A'
+         
+         print d1 == d2
+         
+         # Output:
+         # <==================================================================
+         # dict          : True
+         # OrderedDict   : False
+         # ==================================================================>
+       #+end_src
+
+
+
+
+
+
+
+
+
+
 
