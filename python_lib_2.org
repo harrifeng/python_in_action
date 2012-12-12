@@ -495,3 +495,81 @@
 
 
 
+** array--Sequence of Fixed-Type Data
+   + array和list看起来很像,区别是list的成员类型是可以不同的,而array成员类型必须相同.
+*** Initialization
+    + array的初始化和其他有些不同的是,会需要一个character来显示这个array的type,比如
+      下面例子的'c'就代表我们的array是字符类型的
+      #+begin_src python
+        import array
+        import binascii
+        
+        s = 'This is the array.'
+        a = array.array('c', s)
+        
+        print 'As string:', s
+        print 'As array :', a
+        print 'As hex   :', binascii.hexlify(a)
+        
+        # Output:
+        # <==================================================================
+        # As string: This is the array.
+        # As array : array('c', 'This is the array.')
+        # As hex   : 54686973206973207468652061727261792e
+        # ==================================================================>
+      #+end_src
+*** Manipulating Arrays
+    + 扩展性如下,可以增加,剪切,迭代
+      #+begin_src python
+        import array
+        import pprint
+        
+        a = array.array('i', xrange(3))
+        print 'Initial  :', a
+        
+        a.extend(xrange(3))
+        print 'Extended :', a
+        
+        print 'Slice    :', a[2:5]
+        
+        print 'Iterator:'
+        print list(enumerate(a))
+        
+        # Output:
+        # <==================================================================
+        # Initial  : array('i', [0, 1, 2])
+        # Extended : array('i', [0, 1, 2, 0, 1, 2])
+        # Slice    : array('i', [2, 0, 1])
+        # Iterator:
+        # [(0, 0), (1, 1), (2, 2), (3, 0), (4, 1), (5, 2)]
+        # ==================================================================>
+      #+end_src
+*** Array and Files
+    + 
+      #+begin_src python
+        import array
+        import binascii
+        import tempfile
+        
+        a = array.array('i', xrange(5))
+        print 'A1:', a
+        
+        # Write the array of numbers  to a temporary file
+        output = tempfile.NamedTemporaryFile()
+        a.tofile(output.file) # must pass an *actual* file
+        output.flush()
+        
+        # Read the raw data
+        with open(output.name, 'rb') as input:
+            raw_data = input.read()
+            print 'Raw Contents:', binascii.hexlify(raw_data)
+        
+            #Read the data into an array
+            input.seek(0)
+            a2 = array.array('i')
+            a2.fromfile(input, len(a))
+            print 'A2:', a2
+      #+end_src
+
+
+      
