@@ -1,0 +1,209 @@
+#+OPTIONS: ^:{}
+* Chapter 11:Networking
+** socket--Network Communication
+*** Addressing, Protocol Families, and Socket Types
+    + socket 是用来在internet上交换数据的一种"单向"数据结构,它有两个主要的属性:
+      - address family: 选择network layer protocol
+      - socket type: 选择transport layer protocol
+    + Address Family方面:
+      - AF_INET: IPv4 Internet addressing, 16-bit address
+      - AF_INET6: IPv6 Internet addressing, 128-bit address
+      - AF_UNIX: Unix Domain Socket(UDS). 只在POSIX机器上适用, 可以允许在
+	proces之间传递数据,而不需要经过network层.这种方法效率高,但是要求必须
+	client server都支持UDS, 所以如果client server都是同一台机器,可以考
+	虑使用.
+    + Socket Type方面:
+      - SOCK_DGRAM: UDP
+      - SOCK_STREAM: TCP
+**** Looking Up Hosts on the Network
+     + 可以通过gethostname()来获取当前host的official name
+       #+begin_src python
+         import socket
+         
+         print socket.gethostname()
+         
+         # Output:
+         # <==================================================================
+         # SH-RD-HFENG
+         # ==================================================================>
+       #+end_src
+     + 可以通过gethostbyname()来获取ip地址
+       #+begin_src python
+         import socket
+         
+         for host in ['homer', 'www', 'www.python.org', 'nosuchname']:
+             try:
+                 print '%s : %s' % (host, socket.gethostbyname(host))
+             except socket.error, msg:
+                 print '%s : %s' % (host, msg)
+         
+         # Output:
+         # <==================================================================
+         # homer : 130.164.14.174
+         # www : 130.164.81.10
+         # www.python.org : 82.94.164.162
+         # nosuchname : [Errno 11004] getaddrinfo failed 
+         # ==================================================================>
+       #+end_src
+     + 还可以通过gethostbyname_ex()来获取更加详细的信息
+       #+begin_src python
+         import socket
+         
+         for host in ['homer', 'www', 'www.python.org', 'nosuchname']:
+             print host
+             try:
+                 hostname, aliases, addresses = socket.gethostbyname_ex(host)
+                 print ' Hostname   :', hostname
+                 print ' Aliases    :', aliases
+                 print ' Addresses  :', addresses
+             except socket.error as msg:
+                 print ' ERROR:', msg
+             print
+         
+         # Output:
+         # <==================================================================
+         # homer
+         #  Hostname   : homer.natinst.com
+         #  Aliases    : []
+         #  Addresses  : ['130.164.14.174']
+         # 
+         # www
+         #  Hostname   : www.natinst.com
+         #  Aliases    : []
+         #  Addresses  : ['130.164.81.10']
+         # 
+         # www.python.org
+         #  Hostname   : www.python.org
+         #  Aliases    : []
+         #  Addresses  : ['82.94.164.162']
+         # 
+         # nosuchname
+         #  ERROR: [Errno 11004] getaddrinfo failed 
+         # ==================================================================>
+       #+end_src
+     + getfqdn()能够得到host的全程
+       #+begin_src python
+         import socket
+         
+         for host in ['homer', 'www']:
+             print '%6s: %s' % (host, socket.getfqdn(host))
+         
+         # Output:
+         # <==================================================================
+         # homer: homer.natinst.com
+         # www: ws-cl-ap-ext-prod.natinst.com 
+         # ==================================================================>
+       #+end_src
+     + gethostbyaddr(), 可以通过ip地址获取host信息
+       #+begin_src python
+         import socket
+         
+         hostname, aliases, addresses = socket.gethostbyaddr('10.144.8.51')
+         
+         print 'Hostname   :', hostname
+         print 'Aliases    :', aliases
+         print 'Addresses  :', addresses
+         
+         # Output:
+         # <==================================================================
+         # Hostname   : SH-RD-HFENG.apac.corp.natinst.com
+         # Aliases    : []
+         # Addresses  : ['10.144.8.51']
+         # ==================================================================>
+       #+end_src
+     + 可以通过getservbyname来取得网络服务的端口号(需要parsed_url帮助)
+       #+begin_src python
+         import socket
+         from urlparse import urlparse
+         for url in [ 'http://www.python.org',
+                      'https://www.mybank.com',
+                      'ftp://prep.ai.mit.edu',
+                      'gopher://gopher.micro.umn.edu',
+                      'smtp://mail.example.com',
+                      'imap://mail.example.com',
+                      'imaps://mail.example.com',
+                      'pop3://pop.example.com',
+                      'pop3s://pop.example.com',
+                      ]:
+             parsed_url = urlparse(url)
+             port = socket.getservbyname(parsed_url.scheme)
+             print '%6s : %s' % (parsed_url.scheme, port)
+         
+         # Output:
+         # <==================================================================
+         #   http : 80
+         #  https : 443
+         #    ftp : 21
+         # gopher : 70
+         #   smtp : 25
+         #   imap : 143
+         #  imaps : 993
+         #   pop3 : 110
+         #  pop3s : 995
+         # ==================================================================>
+       #+end_src
+     + 可以通过getservbyport()来取得协议标记
+       #+begin_src python
+         import socket
+         import urlparse
+         
+         for port in [80, 443, 21, 70, 25, 143, 993, 110, 995]:
+             print urlparse.urlunparse(
+                 (socket.getservbyport(port), 'example.com', '/', '', '', '')
+                 )
+         
+         # Output:
+         # <==================================================================
+         # http://example.com/
+         # https://example.com/
+         # ftp://example.com/
+         # gopher://example.com/
+         # smtp://example.com/
+         # imap://example.com/
+         # imaps://example.com/
+         # pop3://example.com/
+         # pop3s://example.com/ 
+         # ==================================================================>
+       #+end_src
+     + 可以通过getportobyname来获取服务的端口号
+       #+begin_src python
+         import socket
+         
+         def get_constants(prefix):
+             """Create a dictionary mapping socket module
+             constants to their names.
+             
+             Arguments:
+             - `prefix`:
+             """
+             return dict( (getattr(socket, n), n)
+                          for n in dir(socket)
+                          if n.startswith(prefix)
+                          )
+         
+         protocols = get_constants('IPPROTO_')
+         
+         for name in ['icmp', 'udp', 'tcp']:
+             proto_num = socket.getprotobyname(name)
+             const_name = protocols[proto_num]
+             print '%4s -> %2d (socket.%-12s = %2d)' %\
+               (name, proto_num, const_name, getattr(socket, const_name))
+         
+         # Output:
+         # <==================================================================
+         # icmp ->  1 (socket.IPPROTO_ICMP =  1)
+         #  udp -> 17 (socket.IPPROTO_UDP  = 17)
+         #  tcp ->  6 (socket.IPPROTO_TCP  =  6)
+         # ==================================================================>
+       #+end_src
+
+
+
+       
+
+       
+
+
+
+
+      
