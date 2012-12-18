@@ -196,6 +196,97 @@
          #  tcp ->  6 (socket.IPPROTO_TCP  =  6)
          # ==================================================================>
        #+end_src
+**** Looking Up Server Addresses
+     + getaddrinfo()能够返回一个tuple里面有根据协议而不同的更加详尽的信息.
+       #+begin_src python
+         import socket
+         
+         def get_constants(prefix):
+             """Create a dictionary mapping socket module
+             constants to their names.
+             
+             Arguments:
+             - `prefix`:
+             """
+             return dict( (getattr(socket, n), n)
+                          for n in dir(socket)
+                          if n.startswith(prefix)
+                          )
+         
+         families = get_constants('AF_')
+         types = get_constants('SOCK_')
+         protocols = get_constants('IPPROTO_')
+         
+         for response in socket.getaddrinfo('www.python.org', 'http'):
+             family , socktype, proto, canonname, sockaddr = response
+         
+             print 'Family        :', families[family]
+             print 'Type          :', types[socktype]
+             print 'Protocol      :', protocols[proto]
+             print 'Canonical name:', canonname
+             print 'Socket address:', sockaddr
+         
+         
+         # Output:
+         # <==================================================================
+         # Family        : AF_INET
+         # Type          : SOCK_STREAM
+         # Protocol      : IPPROTO_IP
+         # Canonical name: 
+         # Socket address: ('82.94.164.162', 80)
+         # Family        : AF_INET6
+         # Type          : SOCK_STREAM
+         # Protocol      : IPPROTO_IP
+         # Canonical name: 
+         # Socket address: ('2001:888:2000:d::a2', 80, 0, 0) 
+         # ==================================================================>
+             
+       #+end_src
+     + getaddrinfo()还可以带参数
+       #+begin_src python
+         import socket
+         
+         def get_constants(prefix):
+             """Create a dictionary mapping socket module
+             constants to their names.
+             
+             Arguments:
+             - `prefix`:
+             """
+             return dict( (getattr(socket, n), n)
+                          for n in dir(socket)
+                          if n.startswith(prefix)
+                          )
+         
+         families = get_constants('AF_')
+         types = get_constants('SOCK_')
+         protocols = get_constants('IPPROTO_')
+         
+         for response in socket.getaddrinfo('www.doughellmann.com', 'http',
+                                            socket.AF_INET, 
+                                            socket.SOCK_STREAM,
+                                            socket.IPPROTO_TCP,
+                                            socket.AI_CANONNAME, 
+                                            ):
+             family , socktype, proto, canonname, sockaddr = response
+         
+             print 'Family        :', families[family]
+             print 'Type          :', types[socktype]
+             print 'Protocol      :', protocols[proto]
+             print 'Canonical name:', canonname
+             print 'Socket address:', sockaddr
+         
+         # Output:
+         # <==================================================================
+         # Family        : AF_INET
+         # Type          : SOCK_STREAM
+         # Protocol      : IPPROTO_TCP
+         # Canonical name: doughellmann.com
+         # Socket address: ('50.56.75.233', 80)
+         # ==================================================================>
+       #+end_src       
+       
+
 
 
 
