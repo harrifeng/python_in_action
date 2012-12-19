@@ -4,8 +4,8 @@
    + collections
 *** Counter
 **** Initialize
-     + 所谓counter就是计数器,用来计数的.其初始化的方法有三种,如下,用[1]list,用
-       [2]dict,或者[3]直接用函数参数列表的形式
+     + 所谓counter就是计数器,用来计数的.其初始化的方法有三种,如下,用1:list,用
+       2:dict,或者3:直接用函数参数列表的形式
        #+begin_src python
          import collections
          
