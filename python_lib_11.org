@@ -626,6 +626,207 @@
      + Server可能不止有一个ip,那么用'0.0.0.0'或者''(空字符)或者INADDR_ANY来在所有
        IP地址监听
 *** User Datagram Client and Server
+** Select--Wait for I/O Efficiently
+** SocketServer--Creating Network Servers
+   + SocketServer 是用来创建network server的, 这些server可以用来处理异步的请求(
+     方法是server request-handler直到request之前都会保持block状态)
+   + SocketServer还会提供mix-in class来创建新的thread,或者新的process来对付不同
+     的request
+   + 在SocketServer体系中, 被分成了两个类: 
+     - server class 来负责communication issues:监听socket 和 accept connection
+     - request handler 用来处理protocol issues, 比如分析数据,处理数据,再把数据
+       发送回去.
+*** Server Objects
+    + 创建一个server,要给他传入一个address好一个request handler class(不是instance)
+    + 一旦server object被创建了以后, 使用handle_request()或者serve_forever():
+      - serve_forever()会在一个循环里面不停调用handle_reques()
+      - 如果需要调用select()来处理不同服务,那么就调用handle_request()
+*** Implementing a Server
+    + 创建一个server的时候, 一般情况下就是复用已经存在的class然后提供一个自定义的
+      request handler class.
+    + BaseServer中含有如下的methods, 一般会在subclass里面被重载
+      - verify_request(request, client_address): 如果要处理这个request就返回
+	True,否则返回False
+      - process_request(request, client_address):调用finish_request()来实际
+	执行处理request的工作. 同时像mix-in class那样创建一个单独的thread或者process
+      - finish_request(request, client_address): 用给顶的request handler class
+	(上文提到过)来创建一个实例. 调用handle()来处理request
+*** Request Handlers
+    + Request handler做了主要的数据处理工作, 有如下三个函数
+      - setup(): 为request做准备, 比如咋StreamRequestHandler里面, setup()就
+	创建了一个file-like object来读写socket
+      - handle(): 实实在在处理request
+      - finish(): 处理setup()创建的东西
+*** Echo Example
+    + 下面就是一个简单的echo socketserver的应用,可以看到
+      #+begin_src python
+        import SocketServer
+        
+        class EchoRequestHandler(SocketServer.BaseRequestHandler):
+            def handle(self):
+                # Echo the back to the client
+                data = self.request.recv(1024)
+                self.request.send(data)
+                return
+        
+        if __name__ == '__main__':
+            import socket
+            import threading
+        
+            address = ('localhost', 0) # let the kernel assign a port
+            # Most important
+            server = SocketServer.TCPServer(address, EchoRequestHandler)
+            ip, port = server.server_address # what port was assigned?
+        
+            t = threading.Thread(target=server.serve_forever)
+            t.setDaemon(True) # don't hang on exit
+            t.start()
+        
+            # Connect to the server
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect((ip, port))
+        
+            # Send the data
+            message = 'Hello, world'
+            print 'Sending : "%s"' % message
+            len_sent = s.send(message)
+        
+            # Receive a response
+            response = s.recv(len_sent)
+            print 'Received: "%s"' % response
+        
+            # Clean up
+            server.shutdown()
+            s.close()
+            server.socket.close()
+        
+        # Output:
+        # <==================================================================
+        # Sending : "Hello, world"
+        # Received: "Hello, world"
+        # ==================================================================>
+      #+end_src
+*** Threading and Forking
+    + 如果想新开一个thread,那么就使用mix-in class来重载process_request(),
+      下面的例子中, 我们创建了一个叫做 ThreadedEchoServer的类来代替
+      SocketServer.TCPServer(当然我们看了到ThreadedEchoServer是继承自
+      SocketServer.TCPServer和SocketServer.ThreadingMixIn)
+      #+begin_src python 
+        import threading
+        import SocketServer
+        
+        class ThreadedEchoRequestHandler(SocketServer.BaseRequestHandler):
+            def handle(self):
+                # Echo the back to the client
+                data = self.request.recv(1024)
+                cur_thread = threading.currentThread()
+                response = '%s: %s' % (cur_thread.getName(), data)
+                self.request.send(response)
+                return
+        
+        class ThreadedEchoServer(SocketServer.ThreadingMixIn,
+                                 SocketServer.TCPServer,
+                                 ):
+            pass
+        
+        if __name__ == '__main__':
+            import socket
+            import threading
+        
+            address = ('localhost', 0) # let the kernel assign a port
+            server = ThreadedEchoServer(address, ThreadedEchoRequestHandler)
+            ip, port = server.server_address # what port was assigned?
+        
+            t = threading.Thread(target=server.serve_forever)
+            t.setDaemon(True) # don't hang on exit
+            t.start()
+            print 'Server loop running in thread:', t.getName()
+        
+            #Connect to the server
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect((ip, port))
+        
+            # Send the data
+            message = 'Hello, world'
+            print 'Sending : "%s"' % message
+            len_sent = s.send(message)
+        
+            # Receive a response
+            response = s.recv(1024)
+            print 'Received: "%s"' % response
+        
+            # Clean up
+            server.shutdown()
+            s.close()
+            server.socket.close()
+        
+        # Output:
+        # <==================================================================
+        # Sending : "Hello, world"
+        # Received: "Thread-2: Hello, world"
+        # ==================================================================>
+      #+end_src
+    + 如果想新开一个process,那么和上面类似,只是被继承之一的除了TCPServer还有
+      就是ForkingMixIn了
+      #+begin_src python
+        import os
+        import SocketServer
+        
+        class ForkingEchoRequestHandler(SocketServer.BaseRequestHandler):
+            def handle(self):
+                # Echo the back to the client
+                data = self.request.recv(1024)
+                cur_pid = os.getpid()
+                response = '%s: %s' % (cur_pid, data)
+                self.request.send(response)
+                return 
+        
+        class ForkingEchoServer(SocketServer.ForkingMixIn,
+                                SocketServer.TCPServer,
+                                ):
+            pass
+                
+        if __name__ == '__main__':
+            import socket
+            import threading
+        
+            address = ('localhost', 0) # let the kernel assign a port
+            server = ForkingEchoServer(address, ForkingEchoRequestHandler)
+            ip, port = server.server_address # what port was assigned?
+        
+            t = threading.Thread(target=server.serve_forever)
+            t.setDaemon(True) # don't hang on exit
+            t.start()
+            print 'Server loop running in process:', os.getpid()
+        
+            # Connect to the server
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect((ip, port))
+        
+            # Send the data
+            message = 'Hello, world'
+            print 'Sending : "%s"' % message
+            len_sent = s.send(message)
+        
+            # Receive a response
+            response = s.recv(1024)
+            print 'Received: "%s"' % response
+        
+            # Clean up
+            server.shutdown()
+            s.close()
+            server.socket.close()
+        
+        # Output:
+        # <==================================================================
+        # Server loop running in process: 17006
+        # Sending : "Hello, world"
+        # Received: "17008: Hello, world"
+        # ==================================================================>
+      #+end_src
+
+
+
 
      
 
