@@ -285,6 +285,352 @@
          # Socket address: ('50.56.75.233', 80)
          # ==================================================================>
        #+end_src       
+**** IP Address Representations
+     + C 语言里面会把IP地址转换成二进制, 在python中将c语言的表达方式进行转换的函数是
+       inet_aton(), inet_ntoa()
+       #+begin_src python
+         import binascii
+         import socket
+         import struct
+         import sys
+         
+         for string_address in ['192.168.1.1', '127.0.0.1']:
+             packed = socket.inet_aton(string_address)
+             print 'Original  :', string_address
+             print 'Packed    :', binascii.hexlify(packed)
+             print 'Unpacked  :', socket.inet_ntoa(packed)
+             print
+         
+         # Output:
+         # <==================================================================
+         # Original  : 192.168.1.1
+         # Packed    : c0a80101
+         # Unpacked  : 192.168.1.1
+         # 
+         # Original  : 127.0.0.1
+         # Packed    : 7f000001
+         # Unpacked  : 127.0.0.1 
+         # ==================================================================>
+       #+end_src
+     + 还可以使用inet_pton()和inet_ntop()来转换IPv6地址的普通(normal)模式和打包
+       (pack)模式.
+       #+begin_src python
+         # 2.7 feature
+         import binascii
+         import socket
+         import struct
+         import sys
+         
+         string_address = '2001:ac10:10a:1234:21e:52ff:fe74:40e'
+         packed = socket.inet_pton(socket.AF_INET6, string_address)
+         
+         print 'Original    :', string_address
+         print 'Packed      :', binascii.hexlify(packed)
+         print 'Unpacked    :', socket.inet_ntop(socket.AF_INET6, packed)
+         
+         # Output:
+         # <==================================================================
+         # python test.py
+         # Original    : 2001:ac10:10a:1234:21e:52ff:fe74:40e
+         # Packed      : 2001ac10010a1234021e52fffe74040e
+         # Unpacked    : 2001:ac10:10a:1234:21e:52ff:fe74:40e
+         # ==================================================================>
+       #+end_src
+*** TCP/IP Client and Server
+    + socket可以被配置为一个server,并且听取来自client的message.如果两个方向的socket
+      都连接的话(因为socket是单向的),那么就说连接建立成功了.
+**** Echo Server
+     + 首先我们建立一个echo server, 绑定到localhost, 10000这个组合上面,等待client
+       来进行连接
+       #+begin_src python
+         import socket
+         import sys       
+         
+         # Create a TCP/IP socket
+         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+         
+         # Bind the socket to the port
+         server_address = ('localhost', 10000)
+         print >> sys.stderr, 'starting up on %s port %s' % server_address
+         sock.bind(server_address)
+         
+         # Listen for incoming connections
+         sock.listen(1)
+         
+         while True:
+             # Wait for a connection
+             print >> sys.stderr, 'waiting for a connection'
+             connection, client_address = sock.accept()
+         
+             try:
+                 print >> sys.stderr, 'connection from', client_address
+         
+                 # Receive the data in small chunks and retransmit it
+                 while True:
+                     data = connection.recv(16)
+                     print >> sys.stderr, 'received "%s"' % data
+                     if data:
+                         print >> sys.stderr, 'sending data back to the client'
+                         connection.sendall(data)
+                     else:
+                         print >> sys.stderr, 'no data from', client_address
+                         break
+         
+             finally:
+                 # Clean up the connection
+                 connection.close()
+         
+         # Output:
+         # <==================================================================
+         # starting up on localhost port 10000
+         # waiting for a connection
+         # connection from ('127.0.0.1', 54054)
+         # received "This is the mess"
+         # sending data back to the client
+         # received "age. It will be "
+         # sending data back to the client
+         # received "repeated."
+         # sending data back to the client
+         # received ""
+         # no data from ('127.0.0.1', 54054)
+         # waiting for a connection
+         # ==================================================================>
+       #+end_src
+**** Echo Client
+     + 然后我们建立一个echo client, 向server发送字符串
+       #+begin_src python
+         import socket
+         import sys
+         
+         # Create a TCP/IP socket
+         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+         
+         # Connect the socket to the port where the server is listening
+         server_address = ('localhost', 10000)
+         print >> sys.stderr, 'connecting to %s port %s' % server_address
+         sock.connect(server_address)
+         
+         try:
+             # Send data
+             message = 'This is the message. It will be repeated.'
+             print >> sys.stderr, 'sending "%s"' % message
+             sock.sendall(message)
+         
+             # Look for the response
+             amount_received = 0
+             amount_expected = len(message)
+         
+             while amount_received < amount_expected:
+                 data = sock.recv(16)
+                 amount_received += len(data)
+                 print >> sys.stderr, 'received "%s"' % data
+         
+         finally:
+             print >> sys.stderr, 'closing socket'
+             sock.close()      
+         
+         # Output:
+         # <==================================================================
+         # connecting to localhost port 10000
+         # sending "This is the message. It will be repeated."
+         # received "This is the mess"
+         # received "age. It will be "
+         # received "repeated."
+         # closing socket
+         # ==================================================================>
+       #+end_src
+**** Client and Server Together
+     + 从上面的运行结果我们可以看到, client连接到server后,发送了"This is the 
+       message. It will be repeated", 然后由于server端是每次只读取16个字符,
+       所以形成了上面的样子.
+**** Easy Client Connections
+     + 上面的client函数还可以简化,因为python lib提供了一个叫做create_connection()
+       的函数(就是把sock.sock函数和sock.connect函数合二为一了).这个函数只需要一个
+       参数,就是two-value tuple里面包括ip地址和port号.
+       #+begin_src python
+         import socket
+         import sys
+         
+         def get_constants(prefix):
+             """Create a dictionary mapping socket module
+             constants to their names.
+             
+             Arguments:
+             - `prefix`:
+             """
+             return dict( (getattr(socket, n), n)
+                          for n in dir(socket)
+                          if n.startswith(prefix)
+                          )
+         
+         families = get_constants('AF_')
+         types = get_constants('SOCK_')
+         protocols = get_constants('IPPROTO_')
+         
+         # Create a TCP/IP socket
+         sock = socket.create_connection(('localhost', 10000))
+         
+         print >> sys.stderr, 'Family     :', families[sock.family]
+         print >> sys.stderr, 'Type       :', types[sock.type]
+         print >> sys.stderr, 'Protocol   :', protocols[sock.proto]
+         print >> sys.stderr
+         
+         try:
+             # Send data
+             message = 'This is the message, It will be repeated.'
+             print >> sys.stderr, 'sending "%s"' % message
+             sock.sendall(message)
+         
+             amount_received = 0
+             amount_expected = len(message)
+         
+             while amount_received < amount_expected:
+                 data = sock.recv(16)
+                 amount_received += len(data)
+                 print >> sys.stderr, 'received "%s"' % data
+         
+         finally:
+             print >> sys.stderr, 'closing socket'
+             sock.close()
+         
+         # Output:
+         # <==================================================================
+         # Family     : AF_INET
+         # Type       : SOCK_STREAM
+         # Protocol   : IPPROTO_TCP
+         # 
+         # sending "This is the message, It will be repeated."
+         # received "This is the mess"
+         # received "age, It will be "
+         # received "repeated."
+         # closing socket 
+         # ==================================================================>
+       #+end_src
+**** Choosing an Address for Listening
+     + server可以在命令行指定端口号
+       #+begin_src python
+         import socket
+         import sys       
+         
+         # Create a TCP/IP socket
+         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+         
+         # Bind the socket to the port
+         server_name = sys.argv[1]
+         server_address = (server_name, 10000)
+         print >> sys.stderr, 'starting up on %s port %s' % server_address
+         sock.bind(server_address)
+         
+         # Listen for incoming connections
+         sock.listen(1)
+         
+         while True:
+             # Wait for a connection
+             print >> sys.stderr, 'waiting for a connection'
+             connection, client_address = sock.accept()
+         
+             try:
+                 print >> sys.stderr, 'connection from', client_address
+         
+                 # Receive the data in small chunks and retransmit it
+                 while True:
+                     data = connection.recv(16)
+                     print >> sys.stderr, 'received "%s"' % data
+                     if data:
+                         print >> sys.stderr, 'sending data back to the client'
+                         connection.sendall(data)
+                     else:
+                         print >> sys.stderr, 'no data from', client_address
+                         break
+         
+             finally:
+                 # Clean up the connection
+                 connection.close()
+         
+         # Output:
+         # <==================================================================
+         # starting up on 116.251.210.230 port 10000
+         # waiting for a connection
+         # connection from ('27.115.104.70', 52092)
+         # received "This is the mess"
+         # sending data back to the client
+         # received "age, It will be "
+         # sending data back to the client
+         # received "repeated."
+         # sending data back to the client
+         # received ""
+         # no data from ('27.115.104.70', 52092)
+         # waiting for a connection
+         # ==================================================================>
+       #+end_src
+     + client 也要相应改变
+       #+begin_src python
+         import socket
+         import sys
+         
+         def get_constants(prefix):
+             """Create a dictionary mapping socket module
+             constants to their names.
+             
+             Arguments:
+             - `prefix`:
+             """
+             return dict( (getattr(socket, n), n)
+                          for n in dir(socket)
+                          if n.startswith(prefix)
+                          )
+         
+         families = get_constants('AF_')
+         types = get_constants('SOCK_')
+         protocols = get_constants('IPPROTO_')
+         
+         # Create a TCP/IP socket
+         sock = socket.create_connection((sys.argv[1], 10000))
+         
+         print >> sys.stderr, 'Family     :', families[sock.family]
+         print >> sys.stderr, 'Type       :', types[sock.type]
+         print >> sys.stderr, 'Protocol   :', protocols[sock.proto]
+         print >> sys.stderr
+         
+         try:
+             # Send data
+             message = 'This is the message, It will be repeated.'
+             print >> sys.stderr, 'sending "%s"' % message
+             sock.sendall(message)
+         
+             amount_received = 0
+             amount_expected = len(message)
+         
+             while amount_received < amount_expected:
+                 data = sock.recv(16)
+                 amount_received += len(data)
+                 print >> sys.stderr, 'received "%s"' % data
+         
+         finally:
+             print >> sys.stderr, 'closing socket'
+             sock.close()    
+         
+         # Output:
+         # <==================================================================
+         # Family     : AF_INET
+         # Type       : SOCK_STREAM
+         # Protocol   : IPPROTO_IP
+         # 
+         # sending "This is the message, It will be repeated."
+         # received "This is the mess"
+         # received "age, It will be "
+         # received "repeated."
+         # closing socket 
+         # ==================================================================>
+       #+end_src
+     + Server可能不止有一个ip,那么用'0.0.0.0'或者''(空字符)或者INADDR_ANY来在所有
+       IP地址监听
+*** User Datagram Client and Server
+
+     
+
+
+
        
 
 
