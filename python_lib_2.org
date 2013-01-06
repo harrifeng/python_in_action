@@ -578,6 +578,89 @@
         # A2: array('i', [0, 1, 2, 3, 4])
         # ==================================================================>
       #+end_src
+*** Alternate Byte Ordering
+    + 数组还可以通过byteswap()这个函数来切换是big-endian还是little-endian.
+      #+begin_src python
+        import array
+        import binascii
+        
+        def to_hex(a):
+            chars_per_item = a.itemsize * 2 
+            hex_version = binascii.hexlify(a)
+            num_chunks = len(hex_version) / chars_per_item
+            for i in xrange(num_chunks):
+                start = i * chars_per_item
+                end = start + chars_per_item
+                yield hex_version[start:end]
+        
+        a1 = array.array('i', xrange(5))
+        a2 = array.array('i', xrange(5))
+        a2.byteswap()
+        
+        fmt = '%10s %10s %10s %10s'
+        print fmt % ('A1 hex', 'A1', 'A2 hex', 'A2')
+        print fmt % (('-' * 10,) * 4)
+        for values in zip(to_hex(a1), a1, to_hex(a2), a2):
+            print fmt % values
+        
+        # Output:
+        # <==================================================================
+        #     A1 hex         A1     A2 hex         A2
+        # ---------- ---------- ---------- ----------
+        #   00000000          0   00000000          0
+        #   01000000          1   00000001   16777216
+        #   02000000          2   00000002   33554432
+        #   03000000          3   00000003   50331648
+        #   04000000          4   00000004   67108864 
+        # ==================================================================>
+      #+end_src
+
 
 
       
+
+** heapq--Heap Sort Algorithm
+   + 堆(heap)是树形数据结构的一种, 是一颗完全树
+   + 保证根节点大于等于其子节点的堆叫做最大堆, 保证根节点小于等于其子节点的堆,
+     叫做最小堆.python中的heapq是实现了一个最小堆
+*** Example Data
+    + 首先是打印一个tree, 因为heap也是tree,可以用到的.
+      #+begin_src python
+        import match
+        from cStringIO import StringIO
+        
+        
+        def show_tree(tree, total_width=36, fill=' '):
+            """Pretty-print a tree.
+            """
+            output = StringIO()
+            last_row = -1
+            for i, n in enumerate(tree):
+                if i:
+                    row = int(match.floor(math.log(i + 1, 2)))
+                else:
+                    row = 0
+                if row != last_row:
+                    output.write('\n')
+                columns = 2 ** row
+                col_width = int(match.floor((total_width * 1.0) / columns))
+                output.write.(str(n).center(col_width, fill))
+                last_row = row
+            print output.getvalue()
+            print '-' * total_width
+            print
+            return
+      #+end_src
+*** Creating a Heap
+    + 
+      #+begin_src python
+        import heapq
+        from heapq_showtree import show_tree
+        from heapq_heapdata import data
+        
+        heap = []
+      #+end_src
+
+
+
+
