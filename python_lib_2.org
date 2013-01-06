@@ -547,6 +547,7 @@
 *** Array and Files
     + 数组的内容可以和文件进行交互.方法是使用raw data
       #+begin_src python
+        # This example works only in Python 2.7
         import array
         import binascii
         import tempfile
