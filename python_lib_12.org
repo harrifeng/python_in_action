@@ -1,0 +1,144 @@
+#+OPTIONS: ^:{}
+* chapter 12 The Internet
+** urlparse--Split URLs into Components
+*** dd
+    + urlparse()会返回一个object,里面有六个成员的类似tuple的object.
+      #+begin_src python
+        from urlparse import urlparse
+        
+        url = 'http://netloc/path;param?query=arg#frag'
+        parsed = urlparse(url)
+        print parsed
+      #+end_src
+    + 结果是"类似"tuple,而不是真的tuple,是tuple的一个子类namedtuple,
+      这个子类支持用名字来访问属性
+      #+begin_src python
+        from urlparse import urlparse
+
+        url = 'http://user:pwd@NetLoc:80/path;param?query=arg#frag'
+        parsed = urlparse(url)
+        print 'scheme    :', parsed.scheme
+        print 'netloc    :', parsed.netloc
+        print 'path      :', parsed.path
+        print 'params    :', parsed.params
+        print 'query     :', parsed.query
+        print 'fragment  :', parsed.fragment
+        print 'username  :', parsed.username
+        print 'password  :', parsed.password
+        print 'hostname  :', parsed.hostname
+        print 'prot      :', parsed.port
+        
+        # Output:
+        # <==================================================================
+        # scheme    : http
+        # netloc    : user:pwd@NetLoc:80
+        # path      : /path
+        # params    : param
+        # query     : query=arg
+        # fragment  : frag
+        # username  : user
+        # password  : pwd
+        # hostname  : netloc
+        # prot      : 80
+        # ==================================================================>
+      #+end_src
+    + urlsplit是另外一种切分URL的方式为RFC2396准备的.这种格式就没有params属性了.
+      #+begin_src python
+        from urlparse import urlsplit
+        
+        url = 'http://user:pwd@NetLoc:80/p1;param/p2;param??query=arg#frag'
+        parsed = urlsplit(url)
+        print 'scheme    :', parsed.scheme
+        print 'netloc    :', parsed.netloc
+        print 'path      :', parsed.path
+        print 'query     :', parsed.query
+        print 'fragment  :', parsed.fragment
+        print 'username  :', parsed.username
+        print 'password  :', parsed.password
+        print 'hostname  :', parsed.hostname, '(netloc in lowercase)'
+        print 'prot      :', parsed.port
+        
+        
+        # Output:
+        # <==================================================================
+        # scheme    : http
+        # netloc    : user:pwd@NetLoc:80
+        # path      : /p1;param/p2;param
+        # query     : ?query=arg
+        # fragment  : frag
+        # username  : user
+        # password  : pwd
+        # hostname  : netloc (netloc in lowercase)
+        # prot      : 80
+        # ==================================================================>
+      #+end_src
+    + 如果简单想找到url和fragment,可以使用urldefrag()
+      #+begin_src python
+        from urlparse import urldefrag
+        
+        original = 'http://netloc/path;param?query=arg#frag'
+        print 'original:', original
+        url, fragment = urldefrag(original)
+        print 'url      :', url
+        print 'fragment :', fragment
+        
+        # Output:
+        # <==================================================================
+        # original: http://netloc/path;param?query=arg#frag
+        # url      : http://netloc/path;param?query=arg
+        # fragment : frag
+        # ==================================================================>
+      #+end_src
+*** Unparsing
+*** Joining
+** BaseHTTPServer--Base Classes for Implementing Web Servers
+** urllib--Network Resource Access
+*** Simple Retrieval with Cache
+    + d
+      #+begin_src python
+        import urllib
+        import os
+        
+        def reporthook(blocks_read, block_size, total_size):
+            """total_size is reported in bytest.
+            block_size is the amount read each time.
+            blocks_read is the number of blocks successfully read.
+            
+            Arguments:
+            - `blocks_read`:
+            - `block_size`:
+            - `total_size`:
+            """
+            if not blocks_read:
+                print 'Connection opened'
+                return 
+            if total_size < 0:
+                # Unknow size
+                print 'Read %d blocks (%d bytes)' % (blocks_read,
+                                                     blocks_read * block_size)
+            else:
+                amount_read = blocks_read * block_size
+                print 'Read %d blocks, or %d/%d' % \
+                  (blocks_read, amount_read, total_size)
+            return
+        
+        try:
+            filename, msg = urllib.urlretrieve(
+                'http://blog.doughellmann.com/',
+                reporthook=reporthook)
+            print 
+            print 'File:', filename
+            print 'Headers:'
+            print msg
+            print 'File exists before cleanup:', os.path.exists(filename)
+        
+        finally:
+            urllib.urlcleanup()
+        
+            print 'File still exists:', os.path.exists(filename)
+      #+end_src
+
+
+
+
+
